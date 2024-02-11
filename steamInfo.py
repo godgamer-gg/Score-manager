@@ -1,31 +1,29 @@
 # Gets achievements for each user and the game they have played
 
-import requests
+# philosophy - we can't compare games so each game must have a max score possible
+# E.g the best player of game A should be treated as the best player of game B
+# nuance in a player's rank is built up through their scores across games
+# Flaw: the cap/growth has to be very high such that being mediocre in a bunch of games
+# isn't enough to equal being the best of one game
 
-COMPLETION_BONUS = 1.2
-GROWTH_RATE = 1.5
-BONUS_PTS = 3
+import requests
+import json
+
+COMPLETION_BONUS = 1.3
+GROWTH_EXP = 1.41
+BONUS_PTS = 2
+
+DOTA_COMP_GROWTH_EXP = 1.41 # exponent for increase in ranks
+DOTA_CHAR_GROWTH_RATE = 5 # Factor for increase in character value
 
 class steamInfoFetcher():
     def __init__(self):
         self.KEY = "DDBDBC9CE41A708C9B190F7DE5F0EE97"
 
-    # First find the players account
-
-    # Next find the list of games the player has
-
-    # Get the achievements the player has obtained
-
-    # Output a score based on achievement percentages and number of total players of 
-    # the game
-    # The more players that play a game and the less that obtain a certain achievement 
-    # the more it is worth
     # points = Sum((100^ / (rarity %)^(growth rate)) + (bonus)
     # fully completing a game results in an additional bonus score, likely a 20% increase to points across the board
-
-# http://api.steampowered.com/<interface name>/<method name>/v<version>/?key=<api key>&format=<format>
-
     def calculateTotalScore(self, steamID) -> float:
+        self.getDOTARank(steamID)
         gameIDs = self.getUserLibrary(steamID)
         score = 0
         for appID in gameIDs:
@@ -105,13 +103,32 @@ class steamInfoFetcher():
         # sum up the value for each achievement
         raw_score = 0
         for val in percents:
-            raw_score += (10000 / val**GROWTH_RATE) + BONUS_PTS
+            raw_score += (10000 / val**GROWTH_EXP) + BONUS_PTS
 
-        # 20% increase for full completion
+
         if completed:
             raw_score = raw_score * COMPLETION_BONUS
-        #appId isn't used now because I don't have a way of getting popularity of a game 
-        print(raw_score)
         return raw_score
+    
+    # gets the player's current rank in DOTA
+    def getDOTARank(self, steamID):
+        dotaID = int(steamID) - 76561197960265728
+        response = requests.get("https://api.opendota.com/api/players/" + str(dotaID))
+        self.pprint(response.json())
+
+        # rank_tier is (medal * 10) + pips
+        response = requests.get("https://api.opendota.com/api/players/" + str(dotaID) + "/rankings")
+        print("rankings")
+        self.pprint(response.json())
+        # I have no idea what this does nobody has had any info for it yet
+        # response = requests.get("https://api.opendota.com/api/players/" + str(dotaID) + "/ratings")
+        # print("ratings")
+        self.pprint(response.json())
+        quit()
+    
+    def pprint(self, data):
+        json_str = json.dumps(data, indent=4)
+        print(json_str)
+
         
         

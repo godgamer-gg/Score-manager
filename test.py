@@ -9,9 +9,11 @@ def testSteamScore():
     # sif.calculateTotalScore("76561198036298829") # George
     # sif.calculateTotalScore("76561198999006815") # Anna
     # sif.calculateTotalScore("76561198047686785") # Ziggy
-    sif.calculateTotalScore("76561198018040884") # Ray
+    # sif.calculateTotalScore("76561198018040884") # Ray
     # sif.calculateTotalScore("76561198139518527") # Kevin
     # sif.calculateTotalScore("76561198000265730") # Taylor
+    # sif.calculateTotalScore("76561197978063214") # Kyle
+    sif.calculateTotalScore("76561198066947995") # Dreamboiz
 
 
 def testRiotScore():
