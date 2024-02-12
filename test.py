@@ -15,9 +15,20 @@ def testSteamScore():
     # sif.calculateTotalScore("76561197978063214") # Kyle
     # sif.calculateTotalScore("76561198066947995") # Dreamboiz
 
+def testDotaScore():
+     sif = steamInfoFetcher()
+     sif.getDOTAScore("76561197978063214") # Kyle
+     sif.getDOTAScore("76561198066947995") # Dreamboiz
+
+def testRLScore():
+    sif = steamInfoFetcher()
+    sif.getRLScore("76561198093909009")
+
 
 def testRiotScore():
     print("TODO")
 
 if __name__ == '__main__':
-    testSteamScore()
+    testRLScore()
+    # testSteamScore()
+    # testDotaScore()

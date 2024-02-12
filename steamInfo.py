@@ -22,15 +22,14 @@ COMP_MAX_SCORE = 300000 # Maximum value each comp game can produce for getting t
 
 ACHIEV_MAX_SCORE = 100000
 
-COMP_GAMES = {
-    570: "getDOTAScore",
-    252950: "Rocket League",
-    730: "CSGO"
-}
-
 class steamInfoFetcher():
     def __init__(self):
         self.KEY = "DDBDBC9CE41A708C9B190F7DE5F0EE97"
+        self.comp_Games = {
+            "570" : self.getDOTAScore,
+            "252950": self.getRLScore,
+            "730": self.invalid_Comp_Func
+        }
 
     # points = Sum((100^ / (rarity %)^(growth rate)) + (bonus)
     # fully completing a game results in an additional bonus score, likely a 20% increase to points across the board
@@ -49,12 +48,14 @@ class steamInfoFetcher():
                 achiev_score = ACHIEV_MAX_SCORE if achiev_score > ACHIEV_MAX_SCORE else achiev_score
                 achiev_total_score += achiev_score
                 total_score += achiev_score
+                print(appID, " achievement score: ", achiev_score)
             
             # Competitive Score
-            if appID in COMP_GAMES.keys():
-                comp_score = COMP_GAMES.get(appID, lambda: 'invalid_Comp_Func')(steamID)
+            if appID in self.comp_Games.keys():
+                comp_score = self.comp_Games[appID](steamID)
                 comp_total_score += comp_score
                 total_score += comp_score
+                print(appID, " competitive score: ", comp_score)
 
         total_score = round(total_score, 3)
         print("achievement total score: ", round(achiev_total_score, 3))
@@ -136,6 +137,7 @@ class steamInfoFetcher():
     
     # gets the player's current rank in DOTA
     def getDOTAScore(self, steamID) -> int:
+        print("getting Dota Competitive Score")
         dotaID = int(steamID) - 76561197960265728
         response = requests.get("https://api.opendota.com/api/players/" + str(dotaID))
         rank_tier = response.json()['rank_tier']
@@ -163,6 +165,16 @@ class steamInfoFetcher():
         print("DOTA scores: ", rank_score, ", ", char_score, ", ", total_score)
         return total_score
 
+    def getRLScore(self, steamID) -> int:
+        print('getting rocketleague competitive score')
+        print("can't access it yet")
+        return 0
+        response = requests.get("https://api.tracker.gg/api/v2/rocket-league/standard/profile/steam/" + steamID)
+        print(response)
+        response = requests.get("https://api.tracker.gg/api/v2/rocket-league/standard/profile/steam/76561198093909009&key=" + self.KEY)
+        print(response)
+        self.pprint(response.json())
+        # self.pprint(response.json())
 
     def pprint(self, data):
         json_str = json.dumps(data, indent=4)
@@ -172,5 +184,4 @@ class steamInfoFetcher():
     def invalid_Comp_Func(self, steamID):
         print("game does not have a competitive score implemented yet")
         return 0
-    
     
