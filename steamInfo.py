@@ -14,7 +14,19 @@ GROWTH_EXP = 1.41
 BONUS_PTS = 2
 
 DOTA_COMP_GROWTH_EXP = 1.41 # exponent for increase in ranks
-DOTA_CHAR_GROWTH_RATE = 5 # Factor for increase in character value
+DOTA_CHAR_GROWTH_Factor = 5 # exponent for increase in character value
+DOTA_CHAR_GROWTH_SCALE = 100
+DOTA_SPLIT = .7 # 70% of the score is rank, 30% is from individual character scores
+
+COMP_MAX_SCORE = 300000 # Maximum value each comp game can produce for getting to the max rank
+
+ACHIEV_MAX_SCORE = 100000
+
+COMP_GAMES = {
+    570: "getDOTAScore",
+    252950: "Rocket League",
+    730: "CSGO"
+}
 
 class steamInfoFetcher():
     def __init__(self):
@@ -23,16 +35,32 @@ class steamInfoFetcher():
     # points = Sum((100^ / (rarity %)^(growth rate)) + (bonus)
     # fully completing a game results in an additional bonus score, likely a 20% increase to points across the board
     def calculateTotalScore(self, steamID) -> float:
-        self.getDOTARank(steamID)
         gameIDs = self.getUserLibrary(steamID)
-        score = 0
+        total_score = 0
+        achiev_total_score = 0
+        comp_total_score = 0
         for appID in gameIDs:
+            # Achievement Score
             percents, completed = self.getAchievementsForGame(appID, steamID)
             if len(percents) > 0:
-                score += self.calculateScoreForGame(percents, completed, appID)
-        score = round(score, 3)
-        print("total score: " + str(score))
-        return score
+                achiev_score = self.calculateScoreForGame(percents)
+                if completed:
+                    achiev_score = achiev_score * COMPLETION_BONUS
+                achiev_score = ACHIEV_MAX_SCORE if achiev_score > ACHIEV_MAX_SCORE else achiev_score
+                achiev_total_score += achiev_score
+                total_score += achiev_score
+            
+            # Competitive Score
+            if appID in COMP_GAMES.keys():
+                comp_score = COMP_GAMES.get(appID, lambda: 'invalid_Comp_Func')(steamID)
+                comp_total_score += comp_score
+                total_score += comp_score
+
+        total_score = round(total_score, 3)
+        print("achievement total score: ", round(achiev_total_score, 3))
+        print("Competitive total score: ", round(comp_total_score, 3))
+        print("Total Score: ", total_score)
+        return total_score
     
     def getUserLibrary(self, steamID) -> list[str]:
         response = requests.get(" http://api.steampowered.com/IPlayerService/GetOwnedGames/v001?key=" 
@@ -98,37 +126,51 @@ class steamInfoFetcher():
                     percents.append(d[ach])
             return percents, False
     
-    def calculateScoreForGame(self, percents, appID, completed):
+    def calculateScoreForGame(self, percents):
 
         # sum up the value for each achievement
         raw_score = 0
         for val in percents:
             raw_score += (10000 / val**GROWTH_EXP) + BONUS_PTS
-
-
-        if completed:
-            raw_score = raw_score * COMPLETION_BONUS
         return raw_score
     
     # gets the player's current rank in DOTA
-    def getDOTARank(self, steamID):
+    def getDOTAScore(self, steamID) -> int:
         dotaID = int(steamID) - 76561197960265728
         response = requests.get("https://api.opendota.com/api/players/" + str(dotaID))
-        self.pprint(response.json())
+        rank_tier = response.json()['rank_tier']
 
-        # rank_tier is (medal * 10) + pips
+        rank_score = (2**(rank_tier / 10)) * (COMP_MAX_SCORE/(80**DOTA_COMP_GROWTH_EXP)) * DOTA_SPLIT
+
+        # I don't have a sample on this so I have no idea how to scale it properly
+        rank_score += response.json()['rank_tier'] * 1000
+
+        # individual characters score
+        # This will need a complete refactor but is honestly fine for now
         response = requests.get("https://api.opendota.com/api/players/" + str(dotaID) + "/rankings")
-        print("rankings")
-        self.pprint(response.json())
-        # I have no idea what this does nobody has had any info for it yet
-        # response = requests.get("https://api.opendota.com/api/players/" + str(dotaID) + "/ratings")
-        # print("ratings")
-        self.pprint(response.json())
-        quit()
-    
+        char_score = 0
+        for hero in response.json():
+            prc = hero['percent_rank']
+            if prc > .6:
+                score = (((prc - .6) * 100) * DOTA_CHAR_GROWTH_Factor)
+            else:
+                score = 0
+            char_score += score
+            # raw_score += (10000 / val**GROWTH_EXP) + BONUS_PTS
+        max_char_score = COMP_MAX_SCORE * (1 - DOTA_SPLIT)
+        if char_score > max_char_score: char_score = max_char_score
+        total_score = rank_score + char_score
+        print("DOTA scores: ", rank_score, ", ", char_score, ", ", total_score)
+        return total_score
+
+
     def pprint(self, data):
         json_str = json.dumps(data, indent=4)
         print(json_str)
-
         
         
+    def invalid_Comp_Func(self, steamID):
+        print("game does not have a competitive score implemented yet")
+        return 0
+    
+    
