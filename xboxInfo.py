@@ -4,4 +4,4 @@ class xboxInfoFetcher:
         print("TODO")
 
     def calculateScore():
-        
+        print("TODO")

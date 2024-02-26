@@ -7,7 +7,7 @@
 # isn't enough to equal being the best of one game
 
 import requests
-import json
+from utils import pprint
 
 COMPLETION_BONUS = 1.3
 GROWTH_EXP = 1.41
@@ -25,6 +25,7 @@ ACHIEV_MAX_SCORE = 100000
 class steamInfoFetcher():
     def __init__(self):
         self.KEY = "DDBDBC9CE41A708C9B190F7DE5F0EE97"
+        self.TRN_KEY = "8e847517-9791-4356-982f-3f446825618b"
         self.comp_Games = {
             "570" : self.getDOTAScore,
             "252950": self.getRLScore,
@@ -38,6 +39,7 @@ class steamInfoFetcher():
         total_score = 0
         achiev_total_score = 0
         comp_total_score = 0
+        gameIDs = ["570"]
         for appID in gameIDs:
             # Achievement Score
             percents, completed = self.getAchievementsForGame(appID, steamID)
@@ -166,19 +168,25 @@ class steamInfoFetcher():
         return total_score
 
     def getRLScore(self, steamID) -> int:
-        print('getting rocketleague competitive score')
+        print('getting rocket league competitive score')
         print("can't access it yet")
         return 0
         response = requests.get("https://api.tracker.gg/api/v2/rocket-league/standard/profile/steam/" + steamID)
         print(response)
         response = requests.get("https://api.tracker.gg/api/v2/rocket-league/standard/profile/steam/76561198093909009&key=" + self.KEY)
         print(response)
-        self.pprint(response.json())
+        pprint(response.json())
         # self.pprint(response.json())
 
-    def pprint(self, data):
-        json_str = json.dumps(data, indent=4)
-        print(json_str)
+    def getCSGOScore(self, steamID) -> int:
+        print("getting CSGO score")
+        response = requests.get(" https://public-api.tracker.gg/v2/csgo/standard/profile//v2/csgo/standard/profile/steam/" + steamID,
+                                headers={"TRN-Api-Key":self.TRN_KEY})
+        print(response)
+        print(response.json())
+        # self.pprint(response.json())
+
+
         
         
     def invalid_Comp_Func(self, steamID):
