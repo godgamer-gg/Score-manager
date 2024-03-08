@@ -1,21 +1,25 @@
-from steamInfo import steamInfoFetcher
+from steamScoreCalculators import steamAchievementScoreCalculator
 
+CALCULATORS = [
+    steamAchievementScoreCalculator,
+]
+
+# Use this as a base class for any new calculator
 class ScoreCalculator():
-
+    
     def calculateScore():
-        steam = steamInfoFetcher
-        steam.testSteamScore()
+        pass
 
+# TODO: literally everything - I'll get back to this one later
 class profileHandler():
 
     def __init__(self):
         self.profiles = dict()
 
     def createProfile(self, username, info):
-        print("creating profile for: ", username)
         self.profiles[username] = info
     
-    def getProfile(self, username) -> dict[str: str]:
+    def getProfile(self, username): # -> dict[str, str]: this makes pylance angry, not sure why
         return self.profiles[username]
 
 

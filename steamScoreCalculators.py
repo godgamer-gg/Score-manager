@@ -22,7 +22,7 @@ COMP_MAX_SCORE = 300000 # Maximum value each comp game can produce for getting t
 
 ACHIEV_MAX_SCORE = 100000
 
-class steamInfoFetcher():
+class steamAchievementScoreCalculator():
     def __init__(self):
         self.KEY = "DDBDBC9CE41A708C9B190F7DE5F0EE97"
         self.TRN_KEY = "8e847517-9791-4356-982f-3f446825618b"
