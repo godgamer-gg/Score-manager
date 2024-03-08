@@ -8,6 +8,7 @@
 
 import requests
 from utils import pprint
+from config import STEAM_KEY, TRN_KEY
 
 COMPLETION_BONUS = 1.3
 GROWTH_EXP = 1.41
@@ -24,8 +25,8 @@ ACHIEV_MAX_SCORE = 100000
 
 class steamInfoFetcher():
     def __init__(self):
-        self.KEY = "DDBDBC9CE41A708C9B190F7DE5F0EE97"
-        self.TRN_KEY = "8e847517-9791-4356-982f-3f446825618b"
+        self.KEY = STEAM_KEY
+        self.TRN_KEY = TRN_KEY
         self.comp_Games = {
             "570" : self.getDOTAScore,
             "252950": self.getRLScore,
