@@ -1,4 +1,7 @@
 from steamInfo import steamInfoFetcher
+from utils import user
+
+VERSION = 0.03
 
 class ScoreCalculator():
 
@@ -6,21 +9,9 @@ class ScoreCalculator():
         steam = steamInfoFetcher
         steam.testSteamScore()
 
-class profileHandler():
-
-    def __init__(self):
-        self.profiles = dict()
-
-    def createProfile(self, username, info):
-        print("creating profile for: ", username)
-        self.profiles[username] = info
-    
-    def getProfile(self, username) -> dict[str: str]:
-        return self.profiles[username]
-
-
 def main():
-    pH = profileHandler()
+    print("TODO")
+
 
 
 
