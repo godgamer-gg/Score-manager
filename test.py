@@ -1,4 +1,4 @@
-from steamInfo import steamInfoFetcher
+from steamScoreCalculators import steamInfoFetcher
 from webGameCalculators import TETRIOCalculator
 
 def testSteamScore():

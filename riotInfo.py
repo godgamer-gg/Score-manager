@@ -1,10 +1,11 @@
 import requests
+from config import RIOT_KEY
 
 class riotScoreCalculator:
 
     def __init__():
         # needs to be regenerated daily
-        self.KEY = "RGAPI-2ddd1d01-c759-409f-a336-db0a0f3044cd"
+        self.KEY = RIOT_KEY
 
     def calculateRawScore():
         # for rank data use league-v4 to get the neccsarry ids that you need you'll 
