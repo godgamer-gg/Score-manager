@@ -1,5 +1,7 @@
 import json
 from handlers.steamHandler import SteamHandler
+from handlers.riotHandler import RiotHandler
+from handlers.xboxHandler import XboxHandler
 from utils import User
 
 VERSION = 0.04
@@ -8,14 +10,21 @@ VERSION = 0.04
 # These will call the individual calculator for each game
 # if t
 PLATFORM_HANDLERS = {
-   "steam": SteamHandler
+   "steam": SteamHandler,
+   "xbox": XboxHandler,
+   "riot": RiotHandler
 }
 
 # base class for any handler
 class Handler():
    
-   def getScores(self, user: User) -> list[(str, float)]:
-      pass
+    # get the scores for all of the games a user has on a platform
+    def getScores(self, user: User) -> list[(str, float)]:
+        return []
+    
+    # confirm if a user has an account on a platform
+    def checkUser(self, user: User) -> bool:
+        return False
 
 # Use this as a base class for any new calculator
 class ScoreCalculator():
@@ -24,7 +33,10 @@ class ScoreCalculator():
         pass
 
 # High level function calls - ideally server calls from here
-
+# Right now the score manager's job is to call the handlers for each game, which
+# will then get the users games on that platform
+# currently the handler returns the list of scores, but it could make sense to instead
+# have them do just the achievemnt score and then return the list of games to be calculated
 class ScoreManager():
     json_file = "userInfo.json"
 

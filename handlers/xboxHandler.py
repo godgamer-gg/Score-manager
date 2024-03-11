@@ -1,6 +1,6 @@
 from ScoreManager import Handler
 
-class xboxHandler(Handler):
+class XboxHandler(Handler):
 
     def __init__():
         print("TODO")

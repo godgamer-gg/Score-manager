@@ -5,6 +5,7 @@ from ScoreManager import Handler, ScoreCalculator
 from calculators.dota import DotaScoreCalculator
 from calculators.rocketLeague import rocketLeagueCalculator
 from calculators.csgo import csgoCalculator
+from utils import initCalculator
 
 COMP_GAMES = {
     "570" : DotaScoreCalculator,
@@ -15,14 +16,11 @@ COMP_GAMES = {
 class SteamHandler(Handler):
     def __init__(self):
         self.KEY = STEAM_KEY
-        self.comp_Games = {
-            "570" : self.getDOTAScore,
-            "252950": self.getRLScore,
-            "730": self.invalid_Comp_Func
-        }
-    
-    def initCalculator(self, calculator: type[ScoreCalculator]) -> ScoreCalculator:
-        
+        self.compGames = {}
+        # iterate through each of the necessary calculators and init one
+        for appID in COMP_GAMES.keys():
+            self.compGames[appID] = initCalculator(COMP_GAMES[appID])
+
     
     def getUserLibrary(self, steamID) -> list[str]:
         response = requests.get(" http://api.steampowered.com/IPlayerService/GetOwnedGames/v001?key=" 

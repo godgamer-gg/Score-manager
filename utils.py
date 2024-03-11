@@ -14,6 +14,7 @@ def pprint(data):
         print(json_str)
     
 def initCalculator(self, calculator: type[ScoreCalculator]) -> ScoreCalculator:
+     return calculator()
 
 # perhaps converting this to a struct would be more efficient
 # just using this to make packaging information easier

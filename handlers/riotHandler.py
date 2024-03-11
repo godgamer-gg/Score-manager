@@ -1,9 +1,10 @@
 import requests
 from config import RIOT_KEY
+from ScoreManager import Handler
 
-class riotScoreCalculator:
+class RiotHandler(Handler):
 
-    def __init__():
+    def __init__(self):
         # needs to be regenerated daily
         self.KEY = RIOT_KEY
 
