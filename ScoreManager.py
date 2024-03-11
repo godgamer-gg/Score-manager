@@ -64,14 +64,31 @@ class ScoreManager():
     # update score for every user to match the newest version
     def updateAllScores(self):
         for user in self.userScores:
-           if user.lastScoreVersion is not VERSION:
-              self.calculateScoreForUser(user)
+            if user.lastScoreVersion is not VERSION:
+                self.calculateScoreForUser(user)
               
-    def calculateScoreForUser(self, user: User):
-        # iterate through all of the platforms registered for the user
-       allScores = []
-       for platform in user.platforms:
-          scores = Handler(self.platformHandlers[platform]).getScores(user)
+    def calculateScoresForUser(self, user: User):
+        # iterate through all of the platforms registered for the user and get scores
+        # this doesn't check if a user has an account for other platforms
+        allScores = {}
+        for platform in user.platforms:
+            scores = Handler(self.platformHandlers[platform]).getScores(user)
+            # if they game is already contained, use the max
+            for entry in scores:
+                name, val = entry
+                if name in allScores:
+                    allScores[name] = max(allScores[name], val)
+
+        totalScore = 0
+        for score in allScores:
+            totalScore += score
+
+        # need to subdivide scores by game type at some point
+        user.lastScoreBreakdown = allScores
+        user.lastScore = totalScore
+        user.lastScoreVersion = VERSION
+
+             
             
              
        

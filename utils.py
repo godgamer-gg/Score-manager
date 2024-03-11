@@ -21,6 +21,7 @@ def initCalculator(self, calculator: type[ScoreCalculator]) -> ScoreCalculator:
 class User:
     userID = None
     lastScore = None
+    lastScoreBreakdown = None
     lastScoreVersion = None
     # platform name: info needed to access account
     accounts = dict[str: list[str]]
