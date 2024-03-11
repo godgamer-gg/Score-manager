@@ -1,5 +1,5 @@
 from steamScoreCalculators import steamInfoFetcher
-from webGameCalculators import TETRIOCalculator
+from calculators.webGameCalculators import TETRIOCalculator
 
 def testSteamScore():
     sif = steamInfoFetcher()

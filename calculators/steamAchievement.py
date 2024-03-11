@@ -7,35 +7,22 @@
 # isn't enough to equal being the best of one game
 
 import requests
-from utils import pprint
-from config import STEAM_KEY, TRN_KEY
+from utils import pprint, User, ACHIEV_MAX_SCORE
+from config import STEAM_KEY
+from ScoreManager import ScoreCalculator
 
 COMPLETION_BONUS = 1.3
 GROWTH_EXP = 1.41
 BONUS_PTS = 2
 
-DOTA_COMP_GROWTH_EXP = 1.41 # exponent for increase in ranks
-DOTA_CHAR_GROWTH_Factor = 5 # exponent for increase in character value
-DOTA_CHAR_GROWTH_SCALE = 100
-DOTA_SPLIT = .7 # 70% of the score is rank, 30% is from individual character scores
-
-COMP_MAX_SCORE = 300000 # Maximum value each comp game can produce for getting to the max rank
-
-ACHIEV_MAX_SCORE = 100000
-
-class SteamAchievementScoreCalculator():
+class SteamAchievementScoreCalculator(ScoreCalculator):
     def __init__(self):
-        self.KEY = STEAM_KEY
-        self.TRN_KEY = TRN_KEY
-        self.comp_Games = {
-            "570" : self.getDOTAScore,
-            "252950": self.getRLScore,
-            "730": self.invalid_Comp_Func
-        }
+        pass
 
     # points = Sum((100^ / (rarity %)^(growth rate)) + (bonus)
     # fully completing a game results in an additional bonus score, likely a 20% increase to points across the board
-    def calculateTotalScore(self, steamID) -> float:
+    def calculateScore(self, user: User) -> float:
+        steamID = user.accounts["steam"]
         gameIDs = self.getUserLibrary(steamID)
         total_score = 0
         achiev_total_score = 0
@@ -68,7 +55,7 @@ class SteamAchievementScoreCalculator():
     
     def getUserLibrary(self, steamID) -> list[str]:
         response = requests.get(" http://api.steampowered.com/IPlayerService/GetOwnedGames/v001?key=" 
-                                + self.KEY + "&steamid=" + steamID + "&include_played_free_games")
+                                + STEAM_KEY + "&steamid=" + steamID + "&include_played_free_games")
         if response.status_code == 403:
             print("your account is private or has some privacy settings on, \
                       please fix and try again")
@@ -87,7 +74,7 @@ class SteamAchievementScoreCalculator():
     def getAchievementsForGame(self, appID, steamID) -> (list[float], bool):
         # get the achievements the player has for the game
         response = requests.get("http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid="
-                                + appID + "&key=" + self.KEY + "&steamid=" + steamID)
+                                + appID + "&key=" + STEAM_KEY + "&steamid=" + steamID)
         if response.status_code == 403:
             print("your account is private or has some privacy settings on, \
                       please fix and try again")
@@ -137,60 +124,4 @@ class SteamAchievementScoreCalculator():
         for val in percents:
             raw_score += (10000 / val**GROWTH_EXP) + BONUS_PTS
         return raw_score
-    
-    # gets the player's current rank in DOTA
-    def getDOTAScore(self, steamID) -> int:
-        print("getting Dota Competitive Score")
-        dotaID = int(steamID) - 76561197960265728
-        response = requests.get("https://api.opendota.com/api/players/" + str(dotaID))
-        rank_tier = response.json()['rank_tier']
-
-        rank_score = (2**(rank_tier / 10)) * (COMP_MAX_SCORE/(80**DOTA_COMP_GROWTH_EXP)) * DOTA_SPLIT
-
-        # I don't have a sample on this so I have no idea how to scale it properly
-        rank_score += response.json()['rank_tier'] * 1000
-
-        # individual characters score
-        # This will need a complete refactor but is honestly fine for now
-        response = requests.get("https://api.opendota.com/api/players/" + str(dotaID) + "/rankings")
-        char_score = 0
-        for hero in response.json():
-            prc = hero['percent_rank']
-            if prc > .6:
-                score = (((prc - .6) * 100) * DOTA_CHAR_GROWTH_Factor)
-            else:
-                score = 0
-            char_score += score
-            # raw_score += (10000 / val**GROWTH_EXP) + BONUS_PTS
-        max_char_score = COMP_MAX_SCORE * (1 - DOTA_SPLIT)
-        if char_score > max_char_score: char_score = max_char_score
-        total_score = rank_score + char_score
-        print("DOTA scores: ", rank_score, ", ", char_score, ", ", total_score)
-        return total_score
-
-    def getRLScore(self, steamID) -> int:
-        print('getting rocket league competitive score')
-        print("can't access it yet")
-        return 0
-        response = requests.get("https://api.tracker.gg/api/v2/rocket-league/standard/profile/steam/" + steamID)
-        print(response)
-        response = requests.get("https://api.tracker.gg/api/v2/rocket-league/standard/profile/steam/76561198093909009&key=" + self.KEY)
-        print(response)
-        pprint(response.json())
-        # self.pprint(response.json())
-
-    def getCSGOScore(self, steamID) -> int:
-        print("getting CSGO score")
-        response = requests.get(" https://public-api.tracker.gg/v2/csgo/standard/profile//v2/csgo/standard/profile/steam/" + steamID,
-                                headers={"TRN-Api-Key":self.TRN_KEY})
-        print(response)
-        print(response.json())
-        # self.pprint(response.json())
-
-
-        
-        
-    def invalid_Comp_Func(self, steamID):
-        print("game does not have a competitive score implemented yet")
-        return 0
     

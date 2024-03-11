@@ -1,4 +1,6 @@
-class xboxInfoFetcher:
+from ScoreManager import Handler
+
+class xboxHandler(Handler):
 
     def __init__():
         print("TODO")
