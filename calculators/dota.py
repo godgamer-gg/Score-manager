@@ -1,6 +1,5 @@
 import requests
-from utils import COMP_MAX_SCORE, User
-from ScoreManager import ScoreCalculator
+from utils import COMP_MAX_SCORE, User, ScoreCalculator
 
 DOTA_COMP_GROWTH_EXP = 1.41 # exponent for increase in ranks
 DOTA_CHAR_GROWTH_Factor = 5 # exponent for increase in character value
@@ -8,6 +7,8 @@ DOTA_CHAR_GROWTH_SCALE = 100
 DOTA_SPLIT = .7 # 70% of the score is rank, 30% is from individual character scores
 
 class DotaScoreCalculator(ScoreCalculator):
+
+    name = "DOTA"
 
     # gets the player's current rank in DOTA
     def calculateScore(self, user: User) -> int:

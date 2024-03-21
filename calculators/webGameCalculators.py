@@ -1,7 +1,9 @@
 import requests
-from utils import pprint
+from utils import pprint, ScoreCalculator
 
-class TETRIOCalculator():
+class TETRIOCalculator(ScoreCalculator):
+
+    name = "TETRIO"
 
     def __init__(self):
         self.baseEndpoint = "https://ch.tetri.io/api/"

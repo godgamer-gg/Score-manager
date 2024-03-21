@@ -7,9 +7,9 @@
 # isn't enough to equal being the best of one game
 
 import requests
-from utils import pprint, User, ACHIEV_MAX_SCORE
+from typing import List, Tuple
+from utils import pprint, User, ACHIEV_MAX_SCORE, ScoreCalculator
 from config import STEAM_KEY
-from ScoreManager import ScoreCalculator
 
 COMPLETION_BONUS = 1.3
 GROWTH_EXP = 1.41
@@ -21,13 +21,11 @@ class SteamAchievementScoreCalculator(ScoreCalculator):
 
     # points = Sum((100^ / (rarity %)^(growth rate)) + (bonus)
     # fully completing a game results in an additional bonus score, likely a 20% increase to points across the board
-    def calculateScore(self, user: User) -> float:
+    def calculateScore(self, user: User, gameIDs) -> float:
+        print("calculating achievement score")
         steamID = user.accounts["steam"]
-        gameIDs = self.getUserLibrary(steamID)
         total_score = 0
         achiev_total_score = 0
-        comp_total_score = 0
-        gameIDs = ["570"]
         for appID in gameIDs:
             # Achievement Score
             percents, completed = self.getAchievementsForGame(appID, steamID)
@@ -38,43 +36,17 @@ class SteamAchievementScoreCalculator(ScoreCalculator):
                 achiev_score = ACHIEV_MAX_SCORE if achiev_score > ACHIEV_MAX_SCORE else achiev_score
                 achiev_total_score += achiev_score
                 total_score += achiev_score
-                print(appID, " achievement score: ", achiev_score)
-            
-            # Competitive Score
-            if appID in self.comp_Games.keys():
-                comp_score = self.comp_Games[appID](steamID)
-                comp_total_score += comp_score
-                total_score += comp_score
-                print(appID, " competitive score: ", comp_score)
+                # print(appID, " achievement score: ", achiev_score)
 
         total_score = round(total_score, 3)
-        print("achievement total score: ", round(achiev_total_score, 3))
-        print("Competitive total score: ", round(comp_total_score, 3))
-        print("Total Score: ", total_score)
         return total_score
-    
-    def getUserLibrary(self, steamID) -> list[str]:
-        response = requests.get(" http://api.steampowered.com/IPlayerService/GetOwnedGames/v001?key=" 
-                                + STEAM_KEY + "&steamid=" + steamID + "&include_played_free_games")
-        if response.status_code == 403:
-            print("your account is private or has some privacy settings on, \
-                      please fix and try again")
-            quit()
-        json = response.json()
-        gameIDs = list()
-        try: 
-            for game in json["response"]["games"]:
-                gameIDs.append(str(game["appid"]))
-        except KeyError:
-            print("Your library is not set to public, please fix and try again")
-            quit()
-            
-        return gameIDs
 
-    def getAchievementsForGame(self, appID, steamID) -> (list[float], bool):
+    # returns a list of achievements completion percentages for each achievement the player has acquired, 
+    # along with true if the player has every achievement for the game
+    def getAchievementsForGame(self, appID, steamID) -> Tuple[List[float], bool]:
         # get the achievements the player has for the game
         response = requests.get("http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid="
-                                + appID + "&key=" + STEAM_KEY + "&steamid=" + steamID)
+                                + appID + "&key=" + STEAM_KEY + "&steamid=" + str(steamID))
         if response.status_code == 403:
             print("your account is private or has some privacy settings on, \
                       please fix and try again")

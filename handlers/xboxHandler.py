@@ -1,8 +1,8 @@
-from ScoreManager import Handler
+from utils import Handler
 
 class XboxHandler(Handler):
 
-    def __init__():
+    def __init__(self):
         print("TODO")
 
     def calculateScore():

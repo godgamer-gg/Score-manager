@@ -1,9 +1,10 @@
 import requests
 
-from ScoreManager import ScoreCalculator
-from utils import User
+from utils import User, ScoreCalculator
 
 class rocketLeagueCalculator(ScoreCalculator):
+
+    name = "RocketLeague"
 
     # Not properly implemented yet
     def getRLScore(self, steamID) -> int:

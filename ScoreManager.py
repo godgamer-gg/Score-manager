@@ -1,8 +1,13 @@
 import json
+import sys
+import jsonpickle
 from handlers.steamHandler import SteamHandler
 from handlers.riotHandler import RiotHandler
 from handlers.xboxHandler import XboxHandler
-from utils import User
+from utils import User, Handler, ScoreCalculator
+
+# VSCODE BROKE SPACES AND TABS I KNOW IT'S TERRIBLE RIGHT NOW I WILL SLOWLY BE FIXING
+
 
 VERSION = 0.04
 
@@ -15,23 +20,6 @@ PLATFORM_HANDLERS = {
    "riot": RiotHandler
 }
 
-# base class for any handler
-class Handler():
-   
-    # get the scores for all of the games a user has on a platform
-    def getScores(self, user: User) -> list[(str, float)]:
-        return []
-    
-    # confirm if a user has an account on a platform
-    def checkUser(self, user: User) -> bool:
-        return False
-
-# Use this as a base class for any new calculator
-class ScoreCalculator():
-    
-    def calculateScore(self, user):
-        pass
-
 # High level function calls - ideally server calls from here
 # Right now the score manager's job is to call the handlers for each game, which
 # will then get the users games on that platform
@@ -39,40 +27,67 @@ class ScoreCalculator():
 # have them do just the achievemnt score and then return the list of games to be calculated
 class ScoreManager():
     json_file = "userInfo.json"
+    users = dict()
 
     def __init__(self):
         # load every score from local database
-        with open(self.json_file, 'r') as file:
-           self.userScores = json.load(file)
+        try: 
+            with open(self.json_file, 'r') as file:
+                self.users = json.load(file)
+                print(type(self.users))
+        except json.decoder.JSONDecodeError:
+            # File was empty
+            pass 
 
         # initialize each handler
         self.platformHandlers = dict()
         for platform in PLATFORM_HANDLERS.keys():
-           self.platformHandlers[platform] = self.makeHandler(PLATFORM_HANDLERS[platform])
-           
+           self.platformHandlers[platform] = self.makeHandler(handler_class=PLATFORM_HANDLERS[platform])
         
-    def makeHandler(self, handler_class: type[Handler]) -> Handler:
+    def makeHandler(self, handler_class: Handler) -> Handler:
        return handler_class()
 
     def storeUsers(self):
-      with open(self.json_file, "w") as file:
-         json.dump(self.userScores, file)
+        print("storing user info")
+        with open(self.json_file, "w") as file:
+            print(self.users)
+            json_out = jsonpickle.encode(self.users)
+            json.dump(json_out, file)
+            # file.write(self.userScores)
 
     def loadUser(self, userID: str):
-      return self.userScores[userID]
+        return self.users[userID]
 
     # update score for every user to match the newest version
     def updateAllScores(self):
-        for user in self.userScores:
+        for user in self.users:
             if user.lastScoreVersion is not VERSION:
-                self.calculateScoreForUser(user)
+                self.calculateScoreForUser(user, store=False)
+        self.storeUsers()
+    
+    def addUser(self, user: User):
+        print("adding user: ", user.userID)
+        self.users[user.userID] = user
+
+    def recalculateAllScores(self):
+        for user in self.userScores:
+            self.calculateScoresForUser(user, store=False)
+        self.storeUsers()
               
-    def calculateScoresForUser(self, user: User):
+    # calculates and updates the score for a given user
+    # pass update=True if you would like to recalc the score even if the version is the same
+    # for more efficient coding please call store=False for repeated calls and then manually call store users for now
+    def calculateScoresForUser(self, user: User, update=False, store=True):
+        if user.userID not in self.users.keys():
+            self.addUser(user)
         # iterate through all of the platforms registered for the user and get scores
         # this doesn't check if a user has an account for other platforms
+        if update and user.lastScoreVersion is VERSION:
+            return
         allScores = {}
         for platform in user.platforms:
-            scores = Handler(self.platformHandlers[platform]).getScores(user)
+            print("calculating score for platform: ", platform)
+            scores = self.platformHandlers[platform].getScores(user)
             # if they game is already contained, use the max
             for entry in scores:
                 name, val = entry
@@ -87,6 +102,9 @@ class ScoreManager():
         user.lastScoreBreakdown = allScores
         user.lastScore = totalScore
         user.lastScoreVersion = VERSION
+
+        if store:
+            self.storeUsers()
 
              
             
