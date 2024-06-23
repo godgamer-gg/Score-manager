@@ -43,7 +43,10 @@ class ScoreManager():
         self.platformHandlers = dict()
         for platform in PLATFORM_HANDLERS.keys():
            self.platformHandlers[platform] = self.makeHandler(handler_class=PLATFORM_HANDLERS[platform])
-        
+
+    def shutdown(self):
+        self.storeUsers()
+
     def makeHandler(self, handler_class: Handler) -> Handler:
        return handler_class()
 
@@ -59,6 +62,8 @@ class ScoreManager():
         return self.users[userID]
 
     # update score for every user to match the newest version
+    # This will fail on some users that change privacy on accounts, delete them, or whatever
+    # need to handle that case
     def updateAllScores(self):
         for user in self.users:
             if user.lastScoreVersion is not VERSION:
@@ -68,12 +73,18 @@ class ScoreManager():
     def addUser(self, user: User):
         print("adding user: ", user.userID)
         self.users[user.userID] = user
-
-    def recalculateAllScores(self):
-        for user in self.userScores:
-            self.calculateScoresForUser(user, store=False)
-        self.storeUsers()
               
+    # calculate all steam scores for a user, usually for a guest user
+    def calculateSteamScores(self, userID):
+        results = self.platformHandlers["steam"].getScores()
+        print(results)
+        # probably return total and some stats 
+        totalScore = 0
+        for entry in results:
+            name, val = entry
+            totalScore += val
+        return totalScore
+
     # calculates and updates the score for a given user
     # pass update=True if you would like to recalc the score even if the version is the same
     # for more efficient coding please call store=False for repeated calls and then manually call store users for now
