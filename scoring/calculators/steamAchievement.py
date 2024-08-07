@@ -8,8 +8,8 @@
 
 import requests
 from typing import List, Tuple
-from utils import pprint, User, ACHIEV_MAX_SCORE, ScoreCalculator
-from config import STEAM_KEY
+from ..utils import pprint, User, ACHIEV_MAX_SCORE, ScoreCalculator
+from ..config import STEAM_KEY
 
 COMPLETION_BONUS = 1.3
 GROWTH_EXP = 1.41

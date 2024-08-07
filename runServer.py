@@ -9,7 +9,23 @@ from typing import Union
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from scoring.ScoreManager import ScoreManager
+
+
+logging.basicConfig(level=logging.INFO)
+
+scoreManager = ScoreManager()
+
+
+# init scoremanager on startup
+async def lifespan(app: FastAPI):
+    logger = logging.getLogger("uvicorn.info")
+    logger.info('scoreManager init')
+    yield
+    scoreManager.shutdown()
+    logger.info("Shut down scoremanager")
+
+app = FastAPI(lifespan=lifespan)
 
 origins = [
     "http://localhost",
@@ -25,25 +41,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-path_root = Path(__file__).parents[1]
-sys.path.append(str(path_root))
-from ScoreManager import ScoreManager
+@app.middleware("http")
+async def log_request(request, call_next):
+    logger = logging.getLogger("uvicorn.info")
+    logger.info(f"Request: {request.method} {request.url}")
+    response = await call_next(request)
+    return response
 
-app = FastAPI()
-
-# app.mount("/", StaticFiles(directory="../frontend/nextjs-blog/", html=True), name="static")
-
-
-scoreManager = None
-
-# init scoremanager on startup
-async def lifespan(app: FastAPI):
-    logging.basicConfig(level=logging.INFO)
-    scoreManager = ScoreManager()
-    logging.info('scoreManager init')
-    yield
-    scoreManager.shutdown()
-    logging.info("Shut down scoremanager")
+# no idea why this is here
+# path_root = Path(__file__).parents[1]
+# sys.path.append(str(path_root))
 
 @app.get("/")
 def read_root():
@@ -68,3 +75,5 @@ async def get_seamscoreFromFriendCode(friend_code: str):
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
+
+

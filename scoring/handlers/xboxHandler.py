@@ -1,4 +1,4 @@
-from utils import Handler
+from ..utils import Handler
 
 class XboxHandler(Handler):
 

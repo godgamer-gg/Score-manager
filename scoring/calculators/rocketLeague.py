@@ -1,6 +1,6 @@
 import requests
 
-from utils import User, ScoreCalculator
+from ..utils import User, ScoreCalculator
 
 class rocketLeagueCalculator(ScoreCalculator):
 

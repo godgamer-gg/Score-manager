@@ -1,7 +1,7 @@
 from calculators.steamAchievement import SteamAchievementScoreCalculator
 from calculators.webGameCalculators import TETRIOCalculator
-from ScoreManager import ScoreManager
-from utils import User
+from scoring.ScoreManager import ScoreManager
+from ..utils import User
 
 def scoreManagerInit():
     sc = ScoreManager()

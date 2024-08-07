@@ -1,12 +1,12 @@
 import requests
 
-from config import STEAM_KEY
+from ..config import STEAM_KEY
 from typing import List, Tuple
-from calculators.dota import DotaScoreCalculator
-from calculators.rocketLeague import rocketLeagueCalculator
-from calculators.csgo import csgoCalculator
-from calculators.steamAchievement import SteamAchievementScoreCalculator
-from utils import initCalculator, Handler, ScoreCalculator
+from ..calculators.dota import DotaScoreCalculator
+from ..calculators.rocketLeague import rocketLeagueCalculator
+from ..calculators.csgo import csgoCalculator
+from ..calculators.steamAchievement import SteamAchievementScoreCalculator
+from ..utils import initCalculator, Handler, ScoreCalculator
 
 COMP_GAMES = {
     "570" : DotaScoreCalculator,
