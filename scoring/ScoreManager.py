@@ -74,17 +74,31 @@ class ScoreManager():
         print("adding user: ", user.userID)
         self.users[user.userID] = user
               
-    # calculate all steam scores for a user, usually for a guest user
-    def calculateSteamScores(self, userID):
-        results = self.platformHandlers["steam"].getScores()
+    # calculate all steam scores for a new guest user
+    def calculateSteamScoresForGuest(self, steamCode: str):
+        guestUser = User(guest=True, steamCode=steamCode)
+        results = self.platformHandlers["steam"].getScores(guestUser)
         print(results)
         # probably return total and some stats 
         totalScore = 0
         for entry in results:
             name, val = entry
-            totalScore += val
+            if val is not None:
+                totalScore += val   
         return totalScore
 
+    # calculate all steam scores for a given user
+    def calculateSteamScoresForUser(self, user: User):
+        results = self.platformHandlers["steam"].getScores(user)
+        print(results)
+        # probably return total and some stats 
+        totalScore = 0
+        for entry in results:
+            name, val = entry
+            if val is not None:
+                totalScore += val   
+        return totalScore
+    
     # calculates and updates the score for a given user
     # pass update=True if you would like to recalc the score even if the version is the same
     # for more efficient coding please call store=False for repeated calls and then manually call store users for now

@@ -63,7 +63,7 @@ def say_hello():
 @app.get("/steamscore/steamCode/{steam_id}")
 async def get_steamscoreFromID(steam_id: str):
     print(steam_id)
-    score = scoreManager.calculateSteamScores(steam_id)
+    score = scoreManager.calculateSteamScoresForGuest(steam_id)
     return {score}
 
 @app.get("/steamscore/friendCode/{friend_code}")

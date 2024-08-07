@@ -16,6 +16,7 @@ ACHIEV_MAX_SCORE = 100000
 # perhaps converting this to a struct would be more efficient
 # just using this to make packaging information easier
 class User:
+	guest: bool
 	nickname: str
 	userID: str
 	lastScore: float
@@ -25,7 +26,7 @@ class User:
 	accounts = {} # Dict[str: List[str]]
 	platforms = [] # List[str] = []
 
-	def __init__(self, steamCode=None, email=None, discord=None, platforms=None, nickname=None):
+	def __init__(self, guest=False, steamCode=None, email=None, discord=None, platforms=None, nickname=None):
 		self.accounts["steam"] = steamCode
 		self.accounts["email"] = email
 		self.accounts["discord"] = discord
