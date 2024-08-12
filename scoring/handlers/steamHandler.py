@@ -6,7 +6,7 @@ from ..calculators.dota import DotaScoreCalculator
 from ..calculators.rocketLeague import rocketLeagueCalculator
 from ..calculators.csgo import csgoCalculator
 from ..calculators.steamAchievement import SteamAchievementScoreCalculator
-from ..utils import initCalculator, Handler, ScoreCalculator
+from ...utils import initCalculator, Handler, ScoreCalculator
 
 COMP_GAMES = {
     "570" : DotaScoreCalculator,
@@ -44,6 +44,9 @@ class SteamHandler(Handler):
         if response.status_code == 403:
             print("your account is private or has some privacy settings on, \
                       please fix and try again")
+            quit()
+        if response.status_code == 400:
+            print("non-valid steam code submitted")
             quit()
         json = response.json()
         gameIDs = list()

@@ -4,7 +4,7 @@ import jsonpickle
 from .handlers.steamHandler import SteamHandler
 from .handlers.riotHandler import RiotHandler
 from .handlers.xboxHandler import XboxHandler
-from .utils import User, Handler, ScoreCalculator
+from ..utils import User, Handler, ScoreCalculator
 
 # VSCODE BROKE SPACES AND TABS I KNOW IT'S TERRIBLE RIGHT NOW I WILL SLOWLY BE FIXING
 
@@ -29,16 +29,9 @@ class ScoreManager():
     json_file = "userInfo.json"
     users = dict()
 
-    def __init__(self):
-        # load every score from local database
-        try: 
-            with open(self.json_file, 'r') as file:
-                self.users = json.load(file)
-                print(type(self.users))
-        except json.decoder.JSONDecodeError:
-            # File was empty
-            pass 
+    def __init__(self, users):
 
+        self.users = users
         # initialize each handler
         self.platformHandlers = dict()
         for platform in PLATFORM_HANDLERS.keys():

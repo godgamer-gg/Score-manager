@@ -6,8 +6,9 @@ from pathlib import Path
 import logging
 from typing import Union
 
-from fastapi import FastAPI, Header
+from fastapi import FastAPI, Header, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 from scoring.ScoreManager import ScoreManager
 
@@ -25,7 +26,8 @@ async def lifespan(app: FastAPI):
     scoreManager.shutdown()
     logger.info("Shut down scoremanager")
 
-app = FastAPI(lifespan=lifespan)
+security = HTTPBasic()
+app = FastAPI(lifespan=lifespan, dependencies=[Depends(security)])
 
 origins = [
     "http://localhost",
@@ -76,4 +78,5 @@ async def get_seamscoreFromFriendCode(friend_code: str):
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
+# @app.
 

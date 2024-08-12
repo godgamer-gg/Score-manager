@@ -16,23 +16,38 @@ ACHIEV_MAX_SCORE = 100000
 # perhaps converting this to a struct would be more efficient
 # just using this to make packaging information easier
 class User:
+
+	# account info
+	username: str
+	password: str
+	token: str
+	priviliged: bool
+
 	guest: bool
+
+	# cosmetic 
 	nickname: str
+	# flairs: list[str] Later on
+	
 	userID: str
 	lastScore: float
 	# lastScoreBreakdown
-	lastScoreVersion = str
+	lastScoreVersion: str
     # platform name: info needed to access account
 	accounts = {} # Dict[str: List[str]]
 	platforms = [] # List[str] = []
 
-	def __init__(self, guest=False, steamCode=None, email=None, discord=None, platforms=None, nickname=None):
+	def __init__(self, username, password, ):
+		self.username = username
+		self.password = password
+		self.userID = str(uuid4())
+
+	def init_account(self, guest=False, steamCode=None, email=None, discord=None, platforms=None, nickname=None):
 		self.accounts["steam"] = steamCode
 		self.accounts["email"] = email
 		self.accounts["discord"] = discord
 		if platforms:
 			self.platforms.extend(platforms)
-		self.userID = str(uuid4())
 		if not nickname:
 			nickname = self.userID
 		if steamCode and "steam" not in self.platforms:
