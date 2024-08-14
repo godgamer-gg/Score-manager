@@ -10,7 +10,7 @@ from fastapi import FastAPI, Header, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
-from scoring.ScoreManager import ScoreManager
+from scoring.scoreManager import ScoreManager
 
 
 logging.basicConfig(level=logging.INFO)

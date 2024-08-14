@@ -1,6 +1,6 @@
 import requests
 from ..config import RIOT_KEY
-from ..utils import Handler
+from utils import Handler
 
 class RiotHandler(Handler):
 

@@ -1,6 +1,6 @@
 import requests
-from ..utils import User, ScoreCalculator
-from ..config import TRN_KEY
+from utils import User, ScoreCalculator
+from config import TRN_KEY
 
 #  not implemented yet
 class csgoCalculator(ScoreCalculator):

@@ -6,7 +6,7 @@ from ..calculators.dota import DotaScoreCalculator
 from ..calculators.rocketLeague import rocketLeagueCalculator
 from ..calculators.csgo import csgoCalculator
 from ..calculators.steamAchievement import SteamAchievementScoreCalculator
-from ...utils import initCalculator, Handler, ScoreCalculator
+from utils import initCalculator, Handler, ScoreCalculator
 
 COMP_GAMES = {
     "570" : DotaScoreCalculator,

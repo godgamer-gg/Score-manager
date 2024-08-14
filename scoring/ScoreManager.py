@@ -4,7 +4,7 @@ import jsonpickle
 from .handlers.steamHandler import SteamHandler
 from .handlers.riotHandler import RiotHandler
 from .handlers.xboxHandler import XboxHandler
-from ..utils import User, Handler, ScoreCalculator
+from utils import User, Handler, ScoreCalculator
 
 # VSCODE BROKE SPACES AND TABS I KNOW IT'S TERRIBLE RIGHT NOW I WILL SLOWLY BE FIXING
 
@@ -27,11 +27,10 @@ PLATFORM_HANDLERS = {
 # have them do just the achievemnt score and then return the list of games to be calculated
 class ScoreManager():
     json_file = "userInfo.json"
-    users = dict()
 
-    def __init__(self, users):
+    def __init__(self, userBase):
 
-        self.users = users
+        self.userBase = userBase
         # initialize each handler
         self.platformHandlers = dict()
         for platform in PLATFORM_HANDLERS.keys():
@@ -43,17 +42,6 @@ class ScoreManager():
     def makeHandler(self, handler_class: Handler) -> Handler:
        return handler_class()
 
-    def storeUsers(self):
-        print("storing user info")
-        with open(self.json_file, "w") as file:
-            print(self.users)
-            json_out = jsonpickle.encode(self.users)
-            json.dump(json_out, file)
-            # file.write(self.userScores)
-
-    def loadUser(self, userID: str):
-        return self.users[userID]
-
     # update score for every user to match the newest version
     # This will fail on some users that change privacy on accounts, delete them, or whatever
     # need to handle that case
@@ -61,13 +49,10 @@ class ScoreManager():
         for user in self.users:
             if user.lastScoreVersion is not VERSION:
                 self.calculateScoreForUser(user, store=False)
-        self.storeUsers()
-    
-    def addUser(self, user: User):
-        print("adding user: ", user.userID)
-        self.users[user.userID] = user
+            # self.userBase.update_user(user)
+        self.userBase.store_all()
               
-    # calculate all steam scores for a new guest user
+    # calculate all steam scores for a guest user
     def calculateSteamScoresForGuest(self, steamCode: str):
         guestUser = User(guest=True, steamCode=steamCode)
         results = self.platformHandlers["steam"].getScores(guestUser)
@@ -80,6 +65,7 @@ class ScoreManager():
                 totalScore += val   
         return totalScore
 
+    # TODO: combine this and above function for cleaner code
     # calculate all steam scores for a given user
     def calculateSteamScoresForUser(self, user: User):
         results = self.platformHandlers["steam"].getScores(user)
@@ -89,19 +75,19 @@ class ScoreManager():
         for entry in results:
             name, val = entry
             if val is not None:
-                totalScore += val   
+                totalScore += val  
+        user.scores["steam"] = results
+        user.lastScoreVersion = VERSION
+        self.userBase.update_user(user)
         return totalScore
     
     # calculates and updates the score for a given user
-    # pass update=True if you would like to recalc the score even if the version is the same
-    # for more efficient coding please call store=False for repeated calls and then manually call store users for now
-    def calculateScoresForUser(self, user: User, update=False, store=True):
-        if user.userID not in self.users.keys():
-            self.addUser(user)
+    def calculateScoresForUser(self, user: User):
+        # Assuming user has already been added by the current workflow
+        # if user.userID not in self.users.keys():
+        #     self.addUser(user)
         # iterate through all of the platforms registered for the user and get scores
         # this doesn't check if a user has an account for other platforms
-        if update and user.lastScoreVersion is VERSION:
-            return
         allScores = {}
         for platform in user.platforms:
             print("calculating score for platform: ", platform)
@@ -120,9 +106,7 @@ class ScoreManager():
         user.lastScoreBreakdown = allScores
         user.lastScore = totalScore
         user.lastScoreVersion = VERSION
-
-        if store:
-            self.storeUsers()
+        self.userBase.update_user(user)
 
              
             

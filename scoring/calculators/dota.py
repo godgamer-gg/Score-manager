@@ -1,5 +1,5 @@
 import requests
-from ..utils import COMP_MAX_SCORE, User, ScoreCalculator
+from utils import COMP_MAX_SCORE, User, ScoreCalculator
 
 DOTA_COMP_GROWTH_EXP = 1.41 # exponent for increase in ranks
 DOTA_CHAR_GROWTH_Factor = 5 # exponent for increase in character value

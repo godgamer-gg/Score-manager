@@ -1,5 +1,5 @@
 import requests
-from ..utils import pprint, ScoreCalculator
+from utils import pprint, ScoreCalculator
 
 class TETRIOCalculator(ScoreCalculator):
 

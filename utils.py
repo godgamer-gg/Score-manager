@@ -15,7 +15,7 @@ ACHIEV_MAX_SCORE = 100000
 
 # perhaps converting this to a struct would be more efficient
 # just using this to make packaging information easier
-class User:
+class User(object):
 
 	# account info
 	username: str
@@ -30,14 +30,14 @@ class User:
 	# flairs: list[str] Later on
 	
 	userID: str
-	lastScore: float
 	# lastScoreBreakdown
 	lastScoreVersion: str
     # platform name: info needed to access account
+	scores = {} # Dict[str: List[str: float]]
 	accounts = {} # Dict[str: List[str]]
 	platforms = [] # List[str] = []
 
-	def __init__(self, username, password, ):
+	def __init__(self, username, password):
 		self.username = username
 		self.password = password
 		self.userID = str(uuid4())
