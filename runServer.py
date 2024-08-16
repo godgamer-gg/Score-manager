@@ -10,20 +10,22 @@ from fastapi import FastAPI, Header, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
-from scoring.scoreManager import ScoreManager
+# from scoring.scoreManager import ScoreManager
+from manager import Manager
 
 
 logging.basicConfig(level=logging.INFO)
 
-scoreManager = ScoreManager()
+manager = Manager()
 
 
 # init scoremanager on startup
+# post refactoring this is probably no longer necessary, leaving in case it's needed
 async def lifespan(app: FastAPI):
     logger = logging.getLogger("uvicorn.info")
     logger.info('scoreManager init')
     yield
-    scoreManager.shutdown()
+    manager.scoreManager.shutdown()
     logger.info("Shut down scoremanager")
 
 security = HTTPBasic()
@@ -50,10 +52,6 @@ async def log_request(request, call_next):
     response = await call_next(request)
     return response
 
-# no idea why this is here
-# path_root = Path(__file__).parents[1]
-# sys.path.append(str(path_root))
-
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
@@ -65,11 +63,11 @@ def say_hello():
 @app.get("/steamscore/steamCode/{steam_id}")
 async def get_steamscoreFromID(steam_id: str):
     print(steam_id)
-    score = scoreManager.calculateSteamScoresForGuest(steam_id)
+    score = manager.scoreManager.calculateSteamScoresForGuest(steam_id)
     return {score}
 
 @app.get("/steamscore/friendCode/{friend_code}")
-async def get_seamscoreFromFriendCode(friend_code: str):
+async def get_steamscoreFromFriendCode(friend_code: str):
     print(friend_code)
 
 
@@ -78,5 +76,36 @@ async def get_seamscoreFromFriendCode(friend_code: str):
 def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
-# @app.
+def verification(creds: HTTPBasicCredentials = Depends(security)):
+    username = creds.username
+    password = creds.password
+    user = manager.verifyUser(username, password)
+    if user is not None:
+        print("User validated")
+        return True
+    else: 
+        raise HTTPException(
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"}
+        )
 
+# end point for login verification
+@app.post("/auth")
+async def search(Verification = Depends(verification)):
+    if Verification:
+        # replace this with what we actually want to do
+        return {"Hello"}
+
+# get username from email
+@app.get("/search/username-from-email/{email}")
+async def searchUserFromEmail(email: str):
+    ret = manager.userBase.getUserByEmail(email)
+    if ret:
+        return {ret}
+    else:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail="could not find username from email",
+            headers={"WWW-Authenticate": "Basic"}
+        )

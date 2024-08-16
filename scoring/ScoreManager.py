@@ -36,8 +36,9 @@ class ScoreManager():
         for platform in PLATFORM_HANDLERS.keys():
            self.platformHandlers[platform] = self.makeHandler(handler_class=PLATFORM_HANDLERS[platform])
 
+    # in case any changes were missed store all changes
     def shutdown(self):
-        self.storeUsers()
+        self.userBase.storeAll()
 
     def makeHandler(self, handler_class: Handler) -> Handler:
        return handler_class()

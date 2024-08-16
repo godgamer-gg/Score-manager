@@ -15,15 +15,27 @@ class Manager():
 
     # creates a new user
     def create_account(self, username, password):
+        if self.userBase.contains_uesrname(username):
+            raise ValueError("username already exists")
         act = User(username, password)
-        self.store_user(act)
+        self.userBase.addUser(act)
 
-    # returns a given user based on userID
-    # def load_user(self, userID):
+    # if a username and password matches returns the user, otherwise returns None
+    def verifyUser(self, username, password) -> User:
+        result = self.userBase.getUserByUsername(username)
+        # better to throw an error here and handle it
+        if result is None:
+            print("user not found")
+            return None
+        if result.password != password:
+            print("passwords did not match")
+            print(result.password, password)
+            return None
+        return result
+
             
 # Handles the storing and loading of users 
 class UserBase():
-
     def __init__(self):
         self.users = dict()
         self.json_file = JSON_FILE
@@ -37,40 +49,52 @@ class UserBase():
             print("JSON DECODER ERROR IN USER BASE")
             pass 
         
-    def get_user(self, userID: str) -> User:
+    def getUser(self, userID: str) -> User:
         if userID in self.users:
             return self.users[userID]
         return None
     
     # could change this to a generic implementation by any field
-    def get_user_by_email(self, email: str) -> User:
-        for user in self.users:
-            if user.email is email:
+    def getUserByEmail(self, email: str) -> User:
+        for id in self.users:
+            user = self.users[id]
+            if user.email is not None and user.email is email:
                 return user
         return None
     
-    def get_all_users(self):
+    def getUserByUsername(self, username: str) -> User:
+        for id in self.users:
+            user = self.users[id]
+            if user.username is not None and user.username == username:
+                return user 
+        return None
+
+    def getAllUsers(self):
         return self.users
     
     # stores all users in the json file, call this when updating info for a user
-    def store_all(self):
+    def storeAll(self):
         print("storing all")
         with open(self.json_file, "w") as file:
             json_obj = jsonpickle.encode(self.users)
             json.dump(json_obj, file)
     
     # adds a user then stores the updated json object
-    def add_user(self, act: User):
+    def addUser(self, act: User):
         print("storing user: ", act.userID)
         self.users[act.userID] = act
-        self.store_all()
+        self.storeAll()
 
     # since python is pass by reference this function isn't quite as necessary but will
     # just call store all for now
-    def update_user(self, act: User):
-        self.store_all()
+    def updateUser(self, act: User):
+        self.storeAll()
         pass
 
+
+        
+        
+        
 
 
 
