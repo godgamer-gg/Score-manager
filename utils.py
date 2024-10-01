@@ -19,7 +19,8 @@ class User(object):
 
 	# account info
 	username: str
-	password: str
+	hashed_password: str
+	email: str
 	token: str
 	priviliged: bool
 
@@ -37,10 +38,18 @@ class User(object):
 	accounts = {} # Dict[str: List[str]]
 	platforms = [] # List[str] = []
 
-	def __init__(self, username, password):
+	def __init__(self, username="Guest", password="Guest"):
 		self.username = username
 		self.password = password
+		if username == "Guest" and password == "Guest":
+			self.guest = True
 		self.userID = str(uuid4())
+
+	def preferred_name(self) -> str:
+		if hasattr(self, "nickname"): # this feels jank there must be a better way
+			return self.nickname
+		else:
+			return self.username
 
 	def init_account(self, guest=False, steamCode=None, email=None, discord=None, platforms=None, nickname=None):
 		self.accounts["steam"] = steamCode

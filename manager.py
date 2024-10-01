@@ -14,23 +14,26 @@ class Manager():
         self.scoreManager = ScoreManager(self.userBase)
 
     # creates a new user
-    def create_account(self, username, password):
-        if self.userBase.contains_uesrname(username):
+    def create_account(self, username, password, email=None) -> User:
+        if self.userBase.contains_username(username):
+            print("contains username", username)
             raise ValueError("username already exists")
         act = User(username, password)
+        if email is not None:
+            if self.userBase.contains_email(email):
+                raise ValueError("account with this email already exists")
+            act.email = email
         self.userBase.addUser(act)
+        return act
 
     # if a username and password matches returns the user, otherwise returns None
     def verifyUser(self, username, password) -> User:
         result = self.userBase.getUserByUsername(username)
         # better to throw an error here and handle it
         if result is None:
-            print("user not found")
-            return None
+            raise ValueError("username not found")
         if result.password != password:
-            print("passwords did not match")
-            print(result.password, password)
-            return None
+            raise ValueError("incorrect password")
         return result
 
             
@@ -53,20 +56,35 @@ class UserBase():
         if userID in self.users:
             return self.users[userID]
         return None
+        
+    def contains_email(self, email: str) -> bool:
+        return self.getUserByEmail(email) is not None
     
     # could change this to a generic implementation by any field
     def getUserByEmail(self, email: str) -> User:
         for id in self.users:
             user = self.users[id]
             if user.email is not None and user.email is email:
+                print(user)
+                print("contains email", email)
                 return user
         return None
+    
+    def contains_username(self, username: str) -> bool:
+        return self.getUserByUsername(username) is not None
     
     def getUserByUsername(self, username: str) -> User:
         for id in self.users:
             user = self.users[id]
-            if user.username is not None and user.username == username:
+            if hasattr(user, 'username') and user.username == username:
                 return user 
+        return None
+    
+    def getUserByEmail(self, email: str) -> User:
+        for id in self.users:
+            user = self.users[id]
+            if hasattr(user, 'email') and user.email == email:
+                return user
         return None
 
     def getAllUsers(self):

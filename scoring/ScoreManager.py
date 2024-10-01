@@ -55,7 +55,8 @@ class ScoreManager():
               
     # calculate all steam scores for a guest user
     def calculateSteamScoresForGuest(self, steamCode: str):
-        guestUser = User(guest=True, steamCode=steamCode)
+        guestUser = User()
+        guestUser.accounts['steam'] = steamCode
         results = self.platformHandlers["steam"].getScores(guestUser)
         print(results)
         # probably return total and some stats 
