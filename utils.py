@@ -1,99 +1,120 @@
-import json    
+import json
 from uuid import uuid4
+
 # from typing import List, Dict, Tuple
 
 # Global constants
-COMP_MAX_SCORE = 300000 # Maximum value each comp game can produce for getting to the max rank
+COMP_MAX_SCORE = (
+    300000  # Maximum value each comp game can produce for getting to the max rank
+)
 
 ACHIEV_MAX_SCORE = 100000
 
 # tossing stuff in here that doesn't have a permanent home
 
+STEAM_SCORES = ["steam_achievement", "DOTA", "rocket_league"]
+
+POSSIBLE_SCORES = {
+    "Steam": STEAM_SCORES,
+}
 
 
 # --------------------------CLASSES--------------------------------------
+
 
 # perhaps converting this to a struct would be more efficient
 # just using this to make packaging information easier
 class User(object):
 
-	# account info
-	username: str
-	hashed_password: str
-	email: str
-	token: str
-	priviliged: bool
+    # account info
+    username: str
+    hashed_password: str
+    email: str
+    token: str
+    priviliged: bool
 
-	guest: bool
+    guest: bool
 
-	# cosmetic 
-	nickname: str
-	# flairs: list[str] Later on
-	
-	userID: str
-	# lastScoreBreakdown
-	lastScoreVersion: str
+    # cosmetic
+    nickname: str
+    # flairs: list[str] Later on
+
+    userID: str
+    # lastScoreBreakdown
+    lastScoreVersion: str
     # platform name: info needed to access account
-	scores = {} # Dict[str: List[str: float]]
-	accounts = {} # Dict[str: List[str]]
-	platforms = [] # List[str] = []
+    scores = {}  # Dict[str: List[str: float]]
+    accounts = {}  # Dict[str: List[str]]
+    platforms = []  # List[str] = []
 
-	def __init__(self, username="Guest", password="Guest"):
-		self.username = username
-		self.password = password
-		if username == "Guest" and password == "Guest":
-			self.guest = True
-		self.userID = str(uuid4())
+    def __init__(self, username="Guest", password="Guest"):
+        self.username = username
+        self.password = password
+        if username == "Guest" and password == "Guest":
+            self.guest = True
+        self.userID = str(uuid4())
 
-	def preferred_name(self) -> str:
-		if hasattr(self, "nickname"): # this feels jank there must be a better way
-			return self.nickname
-		else:
-			return self.username
+    def preferred_name(self) -> str:
+        if hasattr(self, "nickname"):  # this feels jank there must be a better way
+            return self.nickname
+        else:
+            return self.username
 
-	def init_account(self, guest=False, steamCode=None, email=None, discord=None, platforms=None, nickname=None):
-		self.accounts["steam"] = steamCode
-		self.accounts["email"] = email
-		self.accounts["discord"] = discord
-		if platforms:
-			self.platforms.extend(platforms)
-		if not nickname:
-			nickname = self.userID
-		if steamCode and "steam" not in self.platforms:
-			self.platforms.append("steam")
+    def init_account(
+        self,
+        guest=False,
+        steamCode=None,
+        email=None,
+        discord=None,
+        platforms=None,
+        nickname=None,
+    ):
+        self.accounts["steam"] = steamCode
+        self.accounts["email"] = email
+        self.accounts["discord"] = discord
+        if platforms:
+            self.platforms.extend(platforms)
+        if not nickname:
+            nickname = self.userID
+        if steamCode and "steam" not in self.platforms:
+            self.platforms.append("steam")
+
 
 # base class for any handler
-class Handler():
-    
-	def __init__(self):
-		pass
-   
-# get the scores for all of the games a user has on a platform
-	def getScores(self, user: User): # -> List[Tuple[str, float]]: python hates this and I don't want to figure it out right now
-		return []
-    
-# confirm if a user has an account on a platform
-	def checkUser(self, user: User) -> bool:
-		return False
+class Handler:
+
+    def __init__(self):
+        pass
+
+    # get the scores for all of the games a user has on a platform
+    def get_scores(
+        self, user: User
+    ):  # -> List[Tuple[str, float]]: python hates this and I don't want to figure it out right now
+        return []
+
+    # confirm if a user has an account on a platform
+    def check_user(self, user: User) -> bool:
+        return False
+
 
 # Use this as a base class for any new calculator
-class ScoreCalculator():
-	name: str
+class ScoreCalculator:
+    name: str
 
-	def __init__(self):
-		pass
-    
-	def calculateScore(self, user):
-		pass
-          
+    def __init__(self):
+        pass
+
+    def calculate_score(self, user):
+        pass
+
 
 # -----------------------------------FUNCTIONS-------------------------------------
 
+
 def pprint(data):
-	json_str = json.dumps(data, indent=4)
-	print(json_str)
-    
-def initCalculator(calculator: ScoreCalculator) -> ScoreCalculator:
-	return calculator()
+    json_str = json.dumps(data, indent=4)
+    print(json_str)
 
 
+def init_calculator(calculator: ScoreCalculator) -> ScoreCalculator:
+    return calculator()

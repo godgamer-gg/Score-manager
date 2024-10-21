@@ -1,6 +1,7 @@
 import requests
 from utils import pprint, ScoreCalculator
 
+
 class TETRIOCalculator(ScoreCalculator):
 
     name = "TETRIO"
@@ -8,18 +9,15 @@ class TETRIOCalculator(ScoreCalculator):
     def __init__(self):
         self.baseEndpoint = "https://ch.tetri.io/api/"
 
-    def calculateScore(self, username):
+    def calculate_score(self, username):
         self.getUserInfo(username)
 
-    def getUserNameFromDiscord(self, discord) -> str:
+    def get_user_name_from_discord(self, discord) -> str:
         response = requests.get(self.baseEndpoint + "users/search/discord" + discord)
         print(response)
         pprint(response.json())
-    
-    def getUserInfo(self, username):
+
+    def get_user_info(self, username):
         response = requests.get(self.baseEndpoint + "users/" + username)
         pprint(response.json())
         return response.json()
-        
-    
-    

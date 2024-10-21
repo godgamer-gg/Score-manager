@@ -1,7 +1,7 @@
 Github Setup - add readme's, security, stuff for other people to work on it
+Riot Scores
 TETRIO
 Capcom Scores
-League Current Scores
 Setup Server scripts
-Website Frontend
 Discord Server for development - post early website launch and server setup
+Convert data storage to database instead of using JSON and storing in memory

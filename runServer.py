@@ -16,6 +16,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv, find_dotenv
 from jose import jwt, JWTError
+
 # from typing import Optional
 # from datetime import datetime, timedelta
 
@@ -57,12 +58,7 @@ manager = Manager()
 # app = FastAPI(lifespan=lifespan, dependencies=[Depends(security)]) -> to use lifespan
 
 
-
-origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    "http://localhost:3000"
-]
+origins = ["http://localhost", "http://localhost:8000", "http://localhost:3000"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -72,6 +68,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.middleware("http")
 async def log_request(request, call_next):
     logger = logging.getLogger("uvicorn.info")
@@ -79,60 +76,43 @@ async def log_request(request, call_next):
     response = await call_next(request)
     return response
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
 
-@app.get("/hello")
-def say_hello():
-    return {"Hello!"}
-
-# calculates score based on steamcode
-@app.get("/steamscore/steamCode/{steam_id}")
-async def get_steamscoreFromID(steam_id: str):
-    print(steam_id)
-    score = manager.scoreManager.calculateSteamScoresForGuest(steam_id)
-    return {score}
-
-@app.get("/steamscore/friendCode/{friend_code}")
-async def get_steamscoreFromFriendCode(friend_code: str):
-    print(friend_code)
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
-
+# ------------AUTHORIZATION----------------------------------
 def verification(creds: HTTPBasicCredentials = Depends(security)):
     username = creds.username
     password = creds.password
-    try: 
-        user = manager.verifyUser(username, password)
+    try:
+        user = manager.verify_user(username, password)
         if user is not None:
             print("User validated")
             return True
     except ValueError as error:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, 
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail=error.args[0],
-            headers={"WWW-Authenticate": "Basic"}
+            headers={"WWW-Authenticate": "Basic"},
         )
+
 
 # end point for login verification
 @app.post("/auth")
-async def login(Verification = Depends(verification), creds: HTTPBasicCredentials = Depends(security)):
+async def login(
+    Verification=Depends(verification), creds: HTTPBasicCredentials = Depends(security)
+):
     if Verification:
-        nickname = manager.userBase.getUserByUsername(creds.username).preferred_name()
+        nickname = manager.userBase.get_user_by_username(
+            creds.username
+        ).preferred_name()
         token = jwt.encode({"sub": nickname}, SECRET_KEY, algorithm=ALGORITHM)
         return {"access_token": token, "token_type": "bearer"}
-    
+
+
 # authenticate an existing toker for a user
 @app.post("/auth/verify")
-async def get_current_user(authorization: str = Header(...)):
+async def verify_token(authorization: str = Header(...)):
     token = authorization.split(" ")[1]  # Extract Bearer token
     print("token: ", token)
-    print("here")
     try:
-        print("here")
         data = jwt.decode(key=SECRET_KEY, token=token, algorithms=[ALGORITHM])
         print("data: ", data)
         username = data.get("sub")
@@ -144,29 +124,79 @@ async def get_current_user(authorization: str = Header(...)):
         print("error validating token: ", e)
         raise HTTPException(status_code=401, detail="Error validating token {e}")
 
+
+# --------------------BASICS---------------------------------
+
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+
+@app.get("/hello")
+def say_hello():
+    return {"Hello!"}
+
+
+# ------------------------------SCORING----------------------------------
+# calculates score based on steamcode
+@app.get("/steamscore/user")
+async def get_steamscore_from_ID(payload: dict = Depends(verify_token)):
+    username = payload["username"]
+    print("Score request received for: ", username)
+    user = manager.userBase.get_user_by_username(username)
+    score = manager.scoreManager.calculate_user_steam_scores(user)
+    # We'll want to return a more in depth breakdown later
+    return {score}
+
+
+# calculates steam score for a guest based on their steamcode
+# currently no way to validate that code is actually theirs
+@app.get("/steamscore/guest/{steam_id}")
+async def get_guest_steamscore(steam_id: str):
+    print(steam_id)
+    score = manager.scoreManager.calculate_guest_steam_scores(steam_id)
+    return {score}
+
+
+@app.get("/steamscore/friendCode/{friend_code}")
+async def get_steamscore_from_friendcode(friend_code: str):
+    print(friend_code)
+
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: Union[str, None] = None):
+    return {"item_id": item_id, "q": q}
+
+
+# -----------------------------------ACCOUNTS--------------------------------------
+
+
 # get username from email
 @app.get("/search/username-from-email")
-async def searchUserFromEmail(email: str):
-    ret = manager.userBase.getUserByEmail(email)
+async def search_user_from_email(email: str):
+    ret = manager.userBase.get_user_by_email(email)
     if ret:
         return {ret}
     else:
         raise HTTPException(
-            status_code = status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="could not find username from email",
-            headers={"WWW-Authenticate": "Basic"}
+            headers={"WWW-Authenticate": "Basic"},
         )
+
 
 class NewAccount(BaseModel):
     username: str
     email: str
     password: str
 
+
 @app.post("/register")
 async def create_account(act: NewAccount):
     try:
         user = manager.create_account(act.username, act.password, act.email)
-        return {"account created: ", user}
+        token = jwt.encode({"sub": act.username}, SECRET_KEY, algorithm=ALGORITHM)
+        return {"access_token": token, "token_type": "bearer"}
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=error.args[0])
-        
