@@ -1,19 +1,22 @@
+import jsonpickle
+import string
+import random
 from manager import UserBase
 from utils import User
 
 
-def addAndGetUser():
+def add_and_get_user():
     username = "testUser"
     password = "testUser"
-    newUser = User(username, password)
-    userID = newUser.userID
-    userBase = UserBase()
-    userBase.add_user(newUser)
-    ret = userBase.get_user(userID)
+    user = User(username, password)
+    userID = user.userID
+    user_base = UserBase()
+    user_base.add_user(user)
+    ret = user_base.get_user(userID)
     if ret.userID != userID:
         print("Wrong User ID")
         return -1
-    
+
     if ret.username != username:
         print("Wrong username")
         return -1
@@ -21,15 +24,93 @@ def addAndGetUser():
     if ret.password != password:
         print("Wrong password")
         return -1
-    
-    print("Test PASSED")
+
+    user_base.delete_user(userID)
+    print("Test PASSED: add_and_get_user")
     return 0
 
 
+# adds a user and doesn't delete for when this is helpful
+def add_a_user():
+    username = "".join(random.choices(string.ascii_letters, k=7))
+    password = "".join(random.choices(string.ascii_letters, k=7))
+    user = User(username, password)
+    user.accounts["steam"] = 12345678
+    user.accounts["discord"] = "mrUser"
+    user_base = UserBase()
+    user_base.add_user(user)
+    return 0
 
 
+def store_load_user():
+    #  create user
+    username = "testUser"
+    password = "testUser"
+    user = User(username, password)
+    user.accounts["steam"] = 12345678
+    user.accounts["discord"] = "test"
+    UID = user.userID
+
+    #  add and store user
+    user_base_a = UserBase()
+    user_base_a.add_user(user)
+    user_base_a.store_all()
+
+    #  create a new UserBase, which should load the newly created user
+    user_base_b = UserBase()
+    ret_user = user_base_b.get_user(UID)
+    print(ret_user.accounts)
+    if ret_user.accounts != user.accounts:
+        print("Accounts not the same")
+        return -1
+
+    user_base_a.delete_user(UID)
+    print(ret_user.accounts)
+    print(user.accounts)
+
+    print("TEST PASSED: store_load_user")
+    return 0
 
 
-if __name__ == '__main__':
+def test_encoding():
+    username = "testUser"
+    password = "testUser"
+    user = User(username, password)
+    user.accounts["steam"] = 12345678
+    user.accounts["discord"] = "test"
+    UID = user.userID
+    # settings to make sure jsonpickle will properly function
+    jsonpickle.set_encoder_options("json", sort_keys=True)
+    jsonpickle.register(User)
+    # Force jsonpickle to fully encode custom objects and dictionaries
+    jsonpickle.set_encoder_options("json", unpicklable=True)
+
+    json_str = jsonpickle.encode(user)
+    print("updating user: ", user.username)
+    print(json_str)
+    ret_user = jsonpickle.decode(json_str)
+    print(ret_user.accounts)
+    return 0
+
+
+def print_all():
+    user_base = UserBase()
+    for UID in user_base.users:
+        try:
+            user = user_base.get_user(UID)
+            print("username: ", user.username)
+            if hasattr(user, "bio"):
+                print("bio: ", user.bio)
+            if hasattr(user, "accounts"):
+                print("accounts: ", user.accounts)
+        except:
+            print("error printing, fix later")
+
+
+if __name__ == "__main__":
     # run test you want run
-    addAndGetUser()
+    # store_load_user()
+    # add_and_get_user()
+    # test_encoding()
+    add_a_user()
+    print_all()

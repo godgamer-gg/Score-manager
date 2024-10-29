@@ -5,6 +5,12 @@ from utils import User
 
 JSON_FILE = "database.json"
 
+# settings to make sure jsonpickle will properly function
+jsonpickle.set_encoder_options("json", sort_keys=True)
+jsonpickle.register(User)
+# Force jsonpickle to fully encode custom objects and dictionaries
+jsonpickle.set_encoder_options("json", unpicklable=True)
+
 
 # Entry point for the backend server to call into the actual operations of the system
 class Manager:
@@ -54,10 +60,7 @@ class UserBase:
             print("JSON DECODER ERROR IN USER BASE")
             pass
 
-        # settings to make sure jsonpickle will properly function
-        jsonpickle.set_encoder_options("json", sort_keys=True)
-        jsonpickle.register(User)
-
+    # returns the user based on their userID
     def get_user(self, userID: str) -> User:
         if userID in self.users:
             return self.users[userID]
@@ -93,6 +96,13 @@ class UserBase:
                 return user
         return None
 
+    # deletes a user if they are within the UserBase
+    # perhaps make this more versatile to handle other inputs
+    def delete_user(self, UID):
+        if UID in self.users:
+            del self.users[UID]
+        self.store_all()
+
     def get_all_users(self):
         return self.users
 
@@ -113,14 +123,6 @@ class UserBase:
     # just call store all for now
     def update_user(self, act: User):
 
-        # settings to make sure jsonpickle will properly function
-        jsonpickle.set_encoder_options("json", sort_keys=True)
-        jsonpickle.register(User)
-        # Force jsonpickle to fully encode custom objects and dictionaries
-        jsonpickle.set_encoder_options("json", unpicklable=True)
-
         print("updating user: ", act.username)
-        # print(jsonpickle.encode(act))
-        print("accounts: ", act.accounts)
         self.store_all()
         pass

@@ -130,10 +130,15 @@ async def verify_and_return_current_user(payload: dict = Depends(verify_token)):
     username = payload["username"]
     print("detailed session request received for: ", username)
     user = manager.user_base.get_user_by_username(username)
-    print("user: ", user)
-    print("accounts: ", user.accounts)
-    discord = user.accounts["discord"] if "discord" in user.accounts else ""
-    steam = user.accounts["steam"] if "steam" in user.accounts else ""
+    if hasattr(user, "accounts"):
+        print("accounts: ", user.accounts)
+        discord = user.accounts["discord"] if "discord" in user.accounts else ""
+        steam = user.accounts["steam"] if "steam" in user.accounts else ""
+    else:
+        # bug where sometimes accounts dict is not created
+        user.accounts = {"discord": "", "steam:": ""}
+        discord = ""
+        steam = ""
 
     return {
         "username": username,
@@ -236,9 +241,13 @@ async def update_user_profile(
 ):
     username = payload["username"]
     print("updating userinfo for: ", username)
+    print("account info received: ", act_info)
     user = manager.user_base.get_user_by_username(username)
     user.username = act_info.username
+    if not hasattr(user, "accounts"):
+        user.accounts = {}
     user.accounts["steam"] = act_info.steam_id
     user.accounts["email"] = act_info.email
     user.accounts["discord"] = act_info.discord
+    user.bio = act_info.bio
     manager.user_base.update_user(user)

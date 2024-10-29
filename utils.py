@@ -32,9 +32,7 @@ class User(object):
     email: str
     token: str
     priviliged: bool
-
     guest: bool
-
     # cosmetic
     # flairs: list[str] Later on
 
@@ -42,10 +40,6 @@ class User(object):
     # lastScoreBreakdown
     last_score_version: str
     # platform name: info needed to access account
-    scores = {}  # Dict[str: List[str: float]]
-    accounts = {"steam": "", "discord": ""}  # Dict[str: List[str]]
-    platforms = []  # List[str] = []
-    bio = ""
 
     def __init__(self, username="Guest", password="Guest"):
         self.username = username
@@ -53,6 +47,10 @@ class User(object):
         if username == "Guest" and password == "Guest":
             self.guest = True
         self.userID = str(uuid4())
+        self.scores = {}  # Dict[str: List[str: float]]
+        self.accounts = {"steam": "", "discord": ""}  # Dict[str: List[str]]
+        self.platforms = []  # List[str] = []
+        self.bio = ""
 
     def preferred_name(self) -> str:
         if hasattr(self, "nickname"):  # this feels jank there must be a better way

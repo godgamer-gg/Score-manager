@@ -1,7 +1,12 @@
+Fix json encoding
+Calculate percentiles
 Github Setup - add readme's, security, stuff for other people to work on it
+Hashing passwords for security
 Riot Scores
 TETRIO
 Capcom Scores
 Setup Server scripts
 Discord Server for development - post early website launch and server setup
 Convert data storage to database instead of using JSON and storing in memory
+Add a delete user function
+Add good CLI tests
