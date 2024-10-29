@@ -100,7 +100,7 @@ async def login(
     Verification=Depends(verification), creds: HTTPBasicCredentials = Depends(security)
 ):
     if Verification:
-        nickname = manager.userBase.get_user_by_username(
+        nickname = manager.user_base.get_user_by_username(
             creds.username
         ).preferred_name()
         token = jwt.encode({"sub": nickname}, SECRET_KEY, algorithm=ALGORITHM)
@@ -111,18 +111,37 @@ async def login(
 @app.post("/auth/verify")
 async def verify_token(authorization: str = Header(...)):
     token = authorization.split(" ")[1]  # Extract Bearer token
-    print("token: ", token)
     try:
         data = jwt.decode(key=SECRET_KEY, token=token, algorithms=[ALGORITHM])
-        print("data: ", data)
         username = data.get("sub")
-        print("username: ", username)
         if not username:
+            print("token validation failed for data: ", data)
             raise HTTPException(status_code=401, detail="Token validation failed")
         return {"username": username}
     except Exception as e:
-        print("error validating token: ", e)
+        print("error validating token: ", e, "with token: ", token)
         raise HTTPException(status_code=401, detail="Error validating token {e}")
+
+
+# advanced verifiation that also returns all of the users info
+# currently returns: username, email, steamID, discord, bio
+@app.post("/auth/current-user")
+async def verify_and_return_current_user(payload: dict = Depends(verify_token)):
+    username = payload["username"]
+    print("detailed session request received for: ", username)
+    user = manager.user_base.get_user_by_username(username)
+    print("user: ", user)
+    print("accounts: ", user.accounts)
+    discord = user.accounts["discord"] if "discord" in user.accounts else ""
+    steam = user.accounts["steam"] if "steam" in user.accounts else ""
+
+    return {
+        "username": username,
+        "email": user.email,
+        "discord": discord,
+        "steam": steam,
+        "bio": user.bio,
+    }
 
 
 # --------------------BASICS---------------------------------
@@ -144,8 +163,8 @@ def say_hello():
 async def get_steamscore_from_ID(payload: dict = Depends(verify_token)):
     username = payload["username"]
     print("Score request received for: ", username)
-    user = manager.userBase.get_user_by_username(username)
-    score = manager.scoreManager.calculate_user_steam_scores(user)
+    user = manager.user_base.get_user_by_username(username)
+    score = manager.score_manager.calculate_user_steam_scores(user)
     # We'll want to return a more in depth breakdown later
     return {score}
 
@@ -155,7 +174,7 @@ async def get_steamscore_from_ID(payload: dict = Depends(verify_token)):
 @app.get("/steamscore/guest/{steam_id}")
 async def get_guest_steamscore(steam_id: str):
     print(steam_id)
-    score = manager.scoreManager.calculate_guest_steam_scores(steam_id)
+    score = manager.score_manager.calculate_guest_steam_scores(steam_id)
     return {score}
 
 
@@ -175,7 +194,7 @@ def read_item(item_id: int, q: Union[str, None] = None):
 # get username from email
 @app.get("/search/username-from-email")
 async def search_user_from_email(email: str):
-    ret = manager.userBase.get_user_by_email(email)
+    ret = manager.user_base.get_user_by_email(email)
     if ret:
         return {ret}
     else:
@@ -196,7 +215,30 @@ class NewAccount(BaseModel):
 async def create_account(act: NewAccount):
     try:
         user = manager.create_account(act.username, act.password, act.email)
+        print("account created: ", user)
         token = jwt.encode({"sub": act.username}, SECRET_KEY, algorithm=ALGORITHM)
         return {"access_token": token, "token_type": "bearer"}
     except ValueError as error:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=error.args[0])
+
+
+class AccountUpdateInfo(BaseModel):
+    username: str
+    email: str
+    steam_id: str
+    discord: str
+    bio: str
+
+
+@app.post("/profile/update")
+async def update_user_profile(
+    act_info: AccountUpdateInfo, payload: dict = Depends(verify_token)
+):
+    username = payload["username"]
+    print("updating userinfo for: ", username)
+    user = manager.user_base.get_user_by_username(username)
+    user.username = act_info.username
+    user.accounts["steam"] = act_info.steam_id
+    user.accounts["email"] = act_info.email
+    user.accounts["discord"] = act_info.discord
+    manager.user_base.update_user(user)

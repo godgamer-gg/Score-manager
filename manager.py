@@ -10,26 +10,27 @@ JSON_FILE = "database.json"
 class Manager:
 
     def __init__(self):
+        print("creating manager")
         # load every score from local database
-        self.userBase = UserBase()
-        self.scoreManager = ScoreManager(self.userBase)
+        self.user_base = UserBase()
+        self.score_manager = ScoreManager(self.user_base)
 
     # creates a new user
     def create_account(self, username, password, email=None) -> User:
-        if self.userBase.contains_username(username):
+        if self.user_base.contains_username(username):
             print("contains username", username)
             raise ValueError("username already exists")
         act = User(username, password)
         if email is not None:
-            if self.userBase.contains_email(email):
+            if self.user_base.contains_email(email):
                 raise ValueError("account with this email already exists")
             act.email = email
-        self.userBase.add_user(act)
+        self.user_base.add_user(act)
         return act
 
     # if a username and password matches returns the user, otherwise returns None
     def verify_user(self, username, password) -> User:
-        result = self.userBase.get_user_by_username(username)
+        result = self.user_base.get_user_by_username(username)
         # better to throw an error here and handle it
         if result is None:
             raise ValueError("username not found")
@@ -52,6 +53,10 @@ class UserBase:
             # File was empty
             print("JSON DECODER ERROR IN USER BASE")
             pass
+
+        # settings to make sure jsonpickle will properly function
+        jsonpickle.set_encoder_options("json", sort_keys=True)
+        jsonpickle.register(User)
 
     def get_user(self, userID: str) -> User:
         if userID in self.users:
@@ -106,7 +111,16 @@ class UserBase:
 
     # since python is pass by reference this function isn't quite as necessary but will
     # just call store all for now
-    def updateUser(self, act: User):
-        print(act)
+    def update_user(self, act: User):
+
+        # settings to make sure jsonpickle will properly function
+        jsonpickle.set_encoder_options("json", sort_keys=True)
+        jsonpickle.register(User)
+        # Force jsonpickle to fully encode custom objects and dictionaries
+        jsonpickle.set_encoder_options("json", unpicklable=True)
+
+        print("updating user: ", act.username)
+        # print(jsonpickle.encode(act))
+        print("accounts: ", act.accounts)
         self.store_all()
         pass

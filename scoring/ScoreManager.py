@@ -59,7 +59,7 @@ class ScoreManager:
     # need to handle that case
     def update_all_scores(self):
         for user in self.users:
-            if user.lastScoreVersion is not VERSION:
+            if user.last_score_version is not VERSION:
                 self.calculate_score_for_user(user, store=False)
             # self.user_base.update_user(user)
         self.sort_scoresDB()
@@ -98,7 +98,7 @@ class ScoreManager:
             if val is not None:
                 totalScore += val
         user.scores["steam"] = results
-        user.lastScoreVersion = VERSION
+        user.last_score_version = VERSION
         self.user_base.update_user(user)
         return totalScore
 
@@ -124,7 +124,7 @@ class ScoreManager:
             totalScore += score
 
         # need to subdivide scores by game type at some point
-        user.lastScoreBreakdown = allScores
-        user.lastScore = totalScore
-        user.lastScoreVersion = VERSION
+        user.last_score_breakdown = allScores
+        user.last_score = totalScore
+        user.last_score_version = VERSION
         self.user_base.update_user(user)

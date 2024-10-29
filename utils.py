@@ -36,16 +36,16 @@ class User(object):
     guest: bool
 
     # cosmetic
-    nickname: str
     # flairs: list[str] Later on
 
     userID: str
     # lastScoreBreakdown
-    lastScoreVersion: str
+    last_score_version: str
     # platform name: info needed to access account
     scores = {}  # Dict[str: List[str: float]]
-    accounts = {}  # Dict[str: List[str]]
+    accounts = {"steam": "", "discord": ""}  # Dict[str: List[str]]
     platforms = []  # List[str] = []
+    bio = ""
 
     def __init__(self, username="Guest", password="Guest"):
         self.username = username
@@ -60,17 +60,16 @@ class User(object):
         else:
             return self.username
 
+    # currently unused, probably deleting soon
     def init_account(
         self,
         guest=False,
-        steamCode=None,
-        email=None,
-        discord=None,
+        steamCode="",
+        discord="",
         platforms=None,
         nickname=None,
     ):
         self.accounts["steam"] = steamCode
-        self.accounts["email"] = email
         self.accounts["discord"] = discord
         if platforms:
             self.platforms.extend(platforms)
