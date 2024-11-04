@@ -3,21 +3,30 @@ from scoring.calculators.webGameCalculators import TETRIOCalculator
 from scoring.scoreManager import ScoreManager
 from .utils import User
 
-def scoreManagerInit():
+
+def score_manager_init():
     sc = ScoreManager()
     return sc
 
-def runUpdateAllScores(sc):
+
+def update_all_scores(sc):
     sc.updateAllScores()
     return 0
 
-def addNewUser(sc):
-    testUser = User(steamCode=76561198093909009, email="nickarmstrong888@gmail.com", discord="outvictus", nickname="Invictus")
+
+def add_new_user(sc):
+    testUser = User(
+        steamCode=76561198093909009,
+        email="nickarmstrong888@gmail.com",
+        discord="outvictus",
+        nickname="Invictus",
+    )
     # testUser = User(steamCode = "76561198082223836", nickname="Flamemaster") # Jacob
-    sc.calculateScoresForUser(testUser)
+    sc.calculate_scores_for_user(testUser)
     print("score generated for user, ", testUser.lastScore)
-    print ("on Version: ", testUser.lastScoreVersion)
+    print("on Version: ", testUser.lastScoreVersion)
     return 0
+
 
 # def testSteamScore():
 #     sif = steamInfoFetcher()
@@ -48,10 +57,12 @@ def addNewUser(sc):
 #     sif = steamInfoFetcher()
 #     sif.getCSGOScore("76561198093909009") # Me
 
+
 def testTETRIOgetUserNameFromDiscord():
     tetr = TETRIOCalculator()
     username = tetr.getUserNameFromDiscord("flamemaster73")
     print(username)
+
 
 def testCalculateTETRIOScore():
     tetr = TETRIOCalculator()
@@ -62,9 +73,10 @@ def testCalculateTETRIOScore():
 def testRiotScore():
     print("TODO")
 
-if __name__ == '__main__':
-    sc = scoreManagerInit()
-    addNewUser(sc)
+
+if __name__ == "__main__":
+    sc = score_manager_init()
+    add_new_user(sc)
     # testRLScore()
     # testSteamScore()
     # testDotaScore()

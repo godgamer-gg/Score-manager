@@ -17,7 +17,6 @@ VERSION = 0.04
 PLATFORM_HANDLERS = {"steam": SteamHandler, "xbox": XboxHandler, "riot": RiotHandler}
 
 
-# High level function calls - ideally server calls from here
 # Right now the score manager's job is to call the handlers for each game, which
 # will then get the users games on that platform
 # currently the handler returns the list of scores, but it could make sense to instead
@@ -45,7 +44,7 @@ class ScoreManager:
                 for platform in user.scores:
                     for cat in platform:
                         self.scores_db[cat].append(user.scores[platform][cat])
-        print(self.scores_db)
+        print("scores db int: ", self.scores_db)
 
     # in case any changes were missed store all changes
     def shutdown(self):
@@ -69,27 +68,9 @@ class ScoreManager:
     def sort_scoresDB(self):
         print("TODO SORTING SCORES DB")
 
-    # calculate all steam scores for a guest user
-    def calculate_guest_steam_scores(self, steam_code: str):
-        # TODO: probably should make it so you can't enter a steam code for an existing user
-        guestUser = User()
-        guestUser.accounts["steam"] = steam_code
-        results = self.platform_handlers["steam"].get_scores(guestUser)
-        print(results)
-        # probably return total and some stats
-        total_score = 0
-        for entry in results:
-            name, val = entry
-            if val is not None:
-                total_score += val
-
-        # TODO: need to also update db logic to store guest scores
-        bisect.insort(self.scores_db["steam_achievement"], total_score)
-        return total_score
-
     # calculate all steam scores for a given user
     def calculate_user_steam_scores(self, user: User):
-        results = self.platform_handlers["steam"].getScores(user)
+        results = self.platform_handlers["steam"].get_scores(user)
         print(results)
         # probably return total and some stats
         totalScore = 0
@@ -110,21 +91,21 @@ class ScoreManager:
         # iterate through all of the platforms registered for the user and get scores
         # this doesn't check if a user has an account for other platforms
         allScores = {}
-        for platform in user.platforms:
+        for platform in PLATFORM_HANDLERS:
             print("calculating score for platform: ", platform)
-            scores = self.platform_handlers[platform].getScores(user)
+            scores = self.platform_handlers[platform].get_scores(user)
             # if they game is already contained, use the max
             for entry in scores:
                 name, val = entry
                 if name in allScores:
                     allScores[name] = max(allScores[name], val)
-
+                user.scores[name] = val
         totalScore = 0
         for score in allScores:
             totalScore += score
 
         # need to subdivide scores by game type at some point
         user.last_score_breakdown = allScores
-        user.last_score = totalScore
+        user.scores["Total"] = totalScore
         user.last_score_version = VERSION
         self.user_base.update_user(user)

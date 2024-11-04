@@ -1,4 +1,6 @@
 import json
+import string
+import random
 from uuid import uuid4
 
 # from typing import List, Dict, Tuple
@@ -41,15 +43,18 @@ class User(object):
     last_score_version: str
     # platform name: info needed to access account
 
-    def __init__(self, username="Guest", password="Guest"):
-        self.username = username
+    def __init__(self, username=None, password=""):
+        if username == None:
+            self.username = "".join(random.choices(string.ascii_letters, k=14))
+        else:
+            self.username = username
         self.password = password
         if username == "Guest" and password == "Guest":
             self.guest = True
         self.userID = str(uuid4())
         self.scores = {}  # Dict[str: List[str: float]]
         self.accounts = {"steam": "", "discord": ""}  # Dict[str: List[str]]
-        self.platforms = []  # List[str] = []
+        self.platforms = []  # List[str] = [] # not using platforms anymore
         self.bio = ""
 
     def preferred_name(self) -> str:

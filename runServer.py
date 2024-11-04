@@ -120,7 +120,9 @@ async def verify_token(authorization: str = Header(...)):
         return {"username": username}
     except Exception as e:
         print("error validating token: ", e, "with token: ", token)
-        raise HTTPException(status_code=401, detail="Error validating token {e}")
+        raise HTTPException(
+            status_code=401, detail="Error validating token {e.args[0]}"
+        )
 
 
 # advanced verifiation that also returns all of the users info
@@ -163,11 +165,53 @@ def say_hello():
 
 
 # ------------------------------SCORING----------------------------------
+# fetches users current scores, does not calculate them
+@app.get("/scoring/all/user/current")
+async def get_all_users_scores(payload: dict = Depends(verify_token)):
+    username = payload["username"]
+    user = manager.user_base.get_user_by_username(username)
+    if not hasattr(
+        user, "scores"
+    ):  # solve a bug where sometimes scores isn't instantiated
+        user.scores = {}
+    return user.scores
+
+
+@app.get("/scoring/all/user")
+async def calculate_all_users_scores(payload: dict = Depends(verify_token)):
+    username = payload["username"]
+    print("Full score request received for: ", username)
+    user = manager.user_base.get_user_by_username(username)
+
+    if not hasattr(
+        user, "scores"
+    ):  # solve a bug where sometimes scores isn't instantiated
+        user.scores = {}
+
+    try:
+        manager.score_manager.calculate_scores_for_user(user)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=e.args[0],
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    except Exception as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="internal server error",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    print("finished calculating scores for user: ", user.scores)
+    return user.scores
+
+
 # calculates score based on steamcode
-@app.get("/steamscore/user")
+@app.get("/scoring/steam/user")
 async def get_steamscore_from_ID(payload: dict = Depends(verify_token)):
     username = payload["username"]
-    print("Score request received for: ", username)
+    print("Steam score request received for: ", username)
     user = manager.user_base.get_user_by_username(username)
     score = manager.score_manager.calculate_user_steam_scores(user)
     # We'll want to return a more in depth breakdown later
@@ -176,16 +220,18 @@ async def get_steamscore_from_ID(payload: dict = Depends(verify_token)):
 
 # calculates steam score for a guest based on their steamcode
 # currently no way to validate that code is actually theirs
-@app.get("/steamscore/guest/{steam_id}")
+@app.get("/scoring/steam/guest")
 async def get_guest_steamscore(steam_id: str):
     print(steam_id)
     score = manager.score_manager.calculate_guest_steam_scores(steam_id)
     return {score}
 
 
-@app.get("/steamscore/friendCode/{friend_code}")
-async def get_steamscore_from_friendcode(friend_code: str):
-    print(friend_code)
+# I thought there was a way to get steamcode from friend code
+# but I think you can only do the reverse
+# @app.get("/steamscore/friendCode/{friend_code}")
+# async def get_steamscore_from_friendcode(friend_code: str):
+#     print(friend_code)
 
 
 @app.get("/items/{item_id}")

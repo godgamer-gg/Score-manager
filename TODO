@@ -1,12 +1,12 @@
-Fix json encoding
+Fix json encoding (I think it works now)
 Calculate percentiles
 Github Setup - add readme's, security, stuff for other people to work on it
+Change server and manager so all calls from runServer are manager functions
 Hashing passwords for security
 Riot Scores
 TETRIO
 Capcom Scores
 Setup Server scripts
 Discord Server for development - post early website launch and server setup
-Convert data storage to database instead of using JSON and storing in memory
-Add a delete user function
+Convert data storage to a more standard database format instead of using JSON and storing in memory
 Add good CLI tests

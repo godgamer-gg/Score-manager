@@ -3,6 +3,7 @@ import string
 import random
 from manager import UserBase
 from utils import User
+from pprint import pprint
 
 
 def add_and_get_user():
@@ -72,6 +73,31 @@ def store_load_user():
     return 0
 
 
+def set_load_score():
+    username = "".join(random.choices(string.ascii_letters, k=7))
+    password = "".join(random.choices(string.ascii_letters, k=7))
+    test_user = User(username, password)
+    UID = test_user.userID
+    scores = {"steam": 100, "riot": 100}
+    test_user.scores = scores
+    test_user.last_score_version = "test_version"
+    user_base = UserBase()
+    user_base.add_user(test_user)
+    user_base.load_users()
+    ret_user = user_base.get_user(UID)
+    if ret_user.scores != test_user.scores:
+        pprint("ret user scores: ", ret_user.scores)
+        pprint("test user scores: ", test_user.scores)
+        return -1
+    if ret_user.last_score_version is not test_user.last_score_version:
+        print("ret user", ret_user.last_score_version)
+        print("test user", test_user.last_score_version)
+        return -1
+    user_base.delete_user(UID)
+    print("TEST PASSED: set_load_score")
+    return 0
+
+
 def test_encoding():
     username = "testUser"
     password = "testUser"
@@ -95,16 +121,14 @@ def test_encoding():
 
 def print_all():
     user_base = UserBase()
-    for UID in user_base.users:
-        try:
-            user = user_base.get_user(UID)
-            print("username: ", user.username)
-            if hasattr(user, "bio"):
-                print("bio: ", user.bio)
-            if hasattr(user, "accounts"):
-                print("accounts: ", user.accounts)
-        except:
-            print("error printing, fix later")
+    user_base.print_all()
+    return 0
+
+
+def clean():
+    user_base = UserBase()
+    user_base.clean()
+    return 0
 
 
 if __name__ == "__main__":
@@ -112,5 +136,7 @@ if __name__ == "__main__":
     # store_load_user()
     # add_and_get_user()
     # test_encoding()
-    add_a_user()
+    # add_a_user()
+    # set_load_score()
+    clean()
     print_all()
