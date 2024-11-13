@@ -138,5 +138,5 @@ if __name__ == "__main__":
     # test_encoding()
     # add_a_user()
     # set_load_score()
-    clean()
+    # clean()
     print_all()

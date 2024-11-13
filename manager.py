@@ -43,3 +43,33 @@ class Manager:
     def calculate_guest_scores(self, platforms):
         guestUser = User()
         guestUser.guest = True
+
+    # recalculates all scores for a user, returns the users scores along with percentiles and rank
+    def calculate_user_scores(self, username: str):
+        user = self.user_base.get_user_by_username(username)
+
+        if not hasattr(
+            user, "scores"
+        ):  # solve a bug where sometimes scores isn't instantiated
+            user.scores = {}
+        # update users scores
+        self.score_manager.calculate_scores_for_user(user)
+
+        return self.get_user_score_breakdown(user=user)
+
+    # gets users scores, percentile, and grades based on either username or user
+    def get_user_score_breakdown(self, username=None, user=None):
+        if user is None:
+            if username is None:
+                return
+            user = self.user_base.get_user_by_username(username)
+        stats = self.score_manager.get_user_score_stats(user)
+        print("score stats: ", stats)
+
+        ret = {}
+
+        for cat in user.scores:
+            print(user.scores[cat])
+            ret[cat] = [user.scores[cat]] + stats[cat]
+
+        return ret

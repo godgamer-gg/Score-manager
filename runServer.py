@@ -169,42 +169,33 @@ def say_hello():
 @app.get("/scoring/all/user/current")
 async def get_all_users_scores(payload: dict = Depends(verify_token)):
     username = payload["username"]
-    user = manager.user_base.get_user_by_username(username)
-    if not hasattr(
-        user, "scores"
-    ):  # solve a bug where sometimes scores isn't instantiated
-        user.scores = {}
-    return user.scores
+    return manager.get_user_score_breakdown(username=username)
 
 
-@app.get("/scoring/all/user")
+# calculates users scores, percentiles, grade and then returns them
+@app.get("/scoring/all/user/update")
 async def calculate_all_users_scores(payload: dict = Depends(verify_token)):
     username = payload["username"]
     print("Full score request received for: ", username)
-    user = manager.user_base.get_user_by_username(username)
-
-    if not hasattr(
-        user, "scores"
-    ):  # solve a bug where sometimes scores isn't instantiated
-        user.scores = {}
 
     try:
-        manager.score_manager.calculate_scores_for_user(user)
+        ret = manager.calculate_user_scores(username)
+        print("finished calculating scores for user: ", ret)
+        return ret
     except ValueError as e:
+        print("Value error calculating scores")
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_409_CONFLICT,
             detail=e.args[0],
             headers={"WWW-Authenticate": "Basic"},
         )
     except Exception as e:
-        print(e)
+        print("exception calculating scores: ", e)
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="internal server error",
             headers={"WWW-Authenticate": "Basic"},
         )
-    print("finished calculating scores for user: ", user.scores)
-    return user.scores
 
 
 # calculates score based on steamcode

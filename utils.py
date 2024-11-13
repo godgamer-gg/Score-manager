@@ -14,11 +14,9 @@ ACHIEV_MAX_SCORE = 100000
 
 # tossing stuff in here that doesn't have a permanent home
 
-STEAM_SCORES = ["steam_achievement", "DOTA", "rocket_league"]
+STEAM_SCORES = ["achievement", "DOTA", "RocketLeague", "CSGO"]
 
-POSSIBLE_SCORES = {
-    "Steam": STEAM_SCORES,
-}
+POSSIBLE_SCORES = {"Steam": STEAM_SCORES, "Total": ["Total"]}
 
 
 # --------------------------CLASSES--------------------------------------

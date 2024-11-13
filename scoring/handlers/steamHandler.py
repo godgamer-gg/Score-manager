@@ -30,12 +30,13 @@ class SteamHandler(Handler):
         achievementScore = self.achievementCalc.calculate_score(user, userLibrary)
         scores.append(("achievement", achievementScore))
         print("Steam achievement score: ", achievementScore)
-        for appID in userLibrary:
-            if appID in self.compGames.keys():
-                calc = self.compGames[appID]
-                score = calc.calculate_score(user)
-                scores.append((calc.name, score))
-                print(calc.name, ": ", score)
+        # Skipping comp games for now, will be added back later
+        # for appID in userLibrary:
+        #     if appID in self.compGames.keys():
+        #         calc = self.compGames[appID]
+        #         score = calc.calculate_score(user)
+        #         scores.append((calc.name, score))
+        #         print(calc.name, ": ", score)
         return scores
 
     # fetches the users library of games from the steam api

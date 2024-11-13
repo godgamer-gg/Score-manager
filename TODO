@@ -1,5 +1,6 @@
 Fix json encoding (I think it works now)
 Calculate percentiles
+Need to drastically speed up score calculation
 Github Setup - add readme's, security, stuff for other people to work on it
 Change server and manager so all calls from runServer are manager functions
 Hashing passwords for security

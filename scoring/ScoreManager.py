@@ -2,6 +2,7 @@ import json
 import sys
 import jsonpickle
 import bisect
+from sortedcontainers import SortedList
 from .handlers.steamHandler import SteamHandler
 from .handlers.riotHandler import RiotHandler
 from .handlers.xboxHandler import XboxHandler
@@ -36,19 +37,17 @@ class ScoreManager:
 
         # build scores dict
         self.scores_db = dict()  # string (score type) -> [*->float] should be sorted
-        for lis in POSSIBLE_SCORES.values():
-            for cat in lis:
-                self.scores_db[cat] = []
         for user in self.user_base.get_all_users():
             if hasattr(user, "scores"):  # in case user hasn't logged any scores yet
-                for platform in user.scores:
-                    for cat in platform:
-                        self.scores_db[cat].append(user.scores[platform][cat])
+                for entry in user.scores:
+                    if not entry in self.scores_db:
+                        self.scores_db[entry] = SortedList()
+                    self.scores_db[entry].add(user.scores[entry])
         print("scores db int: ", self.scores_db)
 
     # in case any changes were missed store all changes
     def shutdown(self):
-        self.user_base.storeAll()
+        self.user_base.store_all()
 
     def make_handler(self, handler_class: Handler) -> Handler:
         return handler_class()
@@ -90,22 +89,88 @@ class ScoreManager:
         #     self.addUser(user)
         # iterate through all of the platforms registered for the user and get scores
         # this doesn't check if a user has an account for other platforms
-        allScores = {}
+        totalScore = 0
         for platform in PLATFORM_HANDLERS:
             print("calculating score for platform: ", platform)
             scores = self.platform_handlers[platform].get_scores(user)
-            # if they game is already contained, use the max
+            print("scores calculated: ", scores)
             for entry in scores:
                 name, val = entry
-                if name in allScores:
-                    allScores[name] = max(allScores[name], val)
-                user.scores[name] = val
-        totalScore = 0
-        for score in allScores:
-            totalScore += score
+                # update scores_db, python is pass by reference so I'm unsure why this is necessary but it is
+                if name in user.scores:
+                    try:
+                        sorted_lis = self.scores_db[name]
+                        sorted_lis.remove(user.scores[name])
+                        sorted_lis.add(val)
+                    except ValueError:
+                        print("score wasn't in db, investigate bug")
+                # default user scores to 0 if they don't have one, this could end up
+                # inflating percentiles but that's ok
+                print("entry: ", entry)
+                user.scores[name] = 0 if val is None else val
+                totalScore += val
+
+        # overwrite missed scores to 0 as a safety check
+        for platform in POSSIBLE_SCORES:
+            for cat in POSSIBLE_SCORES[platform]:
+                if cat not in user.scores or user.scores[cat] is None:
+                    user.scores[cat] = 0
 
         # need to subdivide scores by game type at some point
-        user.last_score_breakdown = allScores
         user.scores["Total"] = totalScore
         user.last_score_version = VERSION
+        print("finished calculating {user.username}'s scores: ", user.scores)
         self.user_base.update_user(user)
+
+    # calculates and returns the percentile (and rank) of a user in all of their score
+    # categories. Not a true percentile, returns % of users greater than
+    # returns dict[Tuple(float, str)]
+    def get_user_score_stats(self, user: User):
+        summary = {}
+        for entry in user.scores:
+            lis = self.scores_db[entry]
+            score = user.scores[entry]
+            print(lis, score)
+            if lis is None or len(lis) is None or score is None:
+                continue
+            try:
+                # pos = self.scores_db[entry].index(user.scores[entry])
+                pos = lis.index(score)
+                if pos is 0:
+                    percentile = 1.0
+                else:
+                    size = len(self.scores_db[entry])
+                    print("size:", size, "pos:", pos)
+                    percentile = (size - pos - 1) / size
+                summary[entry] = [percentile, self.grade(percentile)]
+            except ValueError:
+                print("score wasn't saved in db")
+                summary[entry] = [0, "N/A"]
+        return summary
+
+    # probably should make these more lenient so 40% of people don't have an S
+    grade_percents = {
+        0.99: "SS+",
+        0.97: "SS",
+        0.95: "S+",
+        0.90: "S",
+        0.85: "A+",
+        0.80: "A",
+        0.75: "A-",
+        0.70: "B+",
+        0.65: "B",
+        0.60: "C+",
+        0.55: "C",
+        0.5: "D+",
+        0.45: "D",
+        0.40: "D-",
+        0.30: "E",
+    }
+
+    def grade(self, percentile: float) -> str:
+        if percentile is None:
+            return "F"
+        for val in self.grade_percents:
+            if percentile > val:
+                return self.grade_percents[val]
+        return "F"

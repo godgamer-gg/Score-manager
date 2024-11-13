@@ -1,16 +1,26 @@
 from scoring.calculators.steamAchievement import SteamAchievementScoreCalculator
 from scoring.calculators.webGameCalculators import TETRIOCalculator
 from scoring.scoreManager import ScoreManager
-from .utils import User
+from utils import User
+from userBase import UserBase
 
 
-def score_manager_init():
-    sc = ScoreManager()
+def score_manager_init(ub):
+    sc = ScoreManager(ub)
     return sc
 
 
 def update_all_scores(sc):
     sc.updateAllScores()
+    return 0
+
+
+def right_grade(sc):
+    for percent in sc.grade_percents:
+        if sc.grade(percent + 0.01) is not sc.grade_percents[percent]:
+            print("TEST FAILED at: ", percent)
+            return -1
+    print("TEST PASSED: right_grade")
     return 0
 
 
@@ -75,8 +85,10 @@ def testRiotScore():
 
 
 if __name__ == "__main__":
-    sc = score_manager_init()
-    add_new_user(sc)
+    ub = UserBase()
+    sc = score_manager_init(ub)
+    # add_new_user(sc)
+    right_grade(sc)
     # testRLScore()
     # testSteamScore()
     # testDotaScore()

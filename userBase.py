@@ -69,8 +69,9 @@ class UserBase:
             del self.users[UID]
         self.store_all()
 
+    # returns a list of all users
     def get_all_users(self):
-        return self.users
+        return self.users.values()
 
     # stores all users in the json file, call this when updating info for a user
     def store_all(self):
