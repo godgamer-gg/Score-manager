@@ -1,6 +1,4 @@
-from scoring.calculators.steamAchievement import SteamAchievementScoreCalculator
-from scoring.calculators.webGameCalculators import TETRIOCalculator
-from scoring.scoreManager import ScoreManager
+from scoring.scoreManager import ScoreManager, entry
 from utils import User
 from userBase import UserBase
 
@@ -35,6 +33,21 @@ def add_new_user(sc):
     sc.calculate_scores_for_user(testUser)
     print("score generated for user, ", testUser.lastScore)
     print("on Version: ", testUser.lastScoreVersion)
+    return 0
+
+
+# sometimes python pass by reference is stupid
+def score_db_changes_on_calc(sc: ScoreManager, user: User):
+    prev_score = entry(user.scores["achievement"], user.username)
+    print("prev score: ", prev_score)
+    print(sc.scores_db["achievement"])
+    # assert prev_score in sc.scores_db["achievement"]
+    sc.calculate_scores_for_user(user)
+    new_score = user.scores["achievement"]
+    print("new score: ", new_score)
+    print(sc.scores_db["achievement"])
+    # assert new_score in sc.scores_db["achievement"]
+    # assert prev_score not in sc.scores_db["achievement"]
     return 0
 
 
@@ -86,9 +99,10 @@ def testRiotScore():
 
 if __name__ == "__main__":
     ub = UserBase()
+    testUser = ub.get_user_by_username("testUser10")
     sc = score_manager_init(ub)
     # add_new_user(sc)
-    right_grade(sc)
+    # right_grade(sc)
     # testRLScore()
     # testSteamScore()
     # testDotaScore()
@@ -96,3 +110,5 @@ if __name__ == "__main__":
     # testTETRIOgetUserNameFromDiscord()
     # testCalculateTETRIOScore()
     # sc.user_base.print_all()
+    # score_db_changes_on_calc(sc, testUser)
+    fuckin_around_with_score_db(sc, testUser)

@@ -50,7 +50,7 @@ class User(object):
         if username == "Guest" and password == "Guest":
             self.guest = True
         self.userID = str(uuid4())
-        self.scores = {}  # Dict[str: List[str: float]]
+        self.scores = {}  # Dict[str: : float]
         self.accounts = {"steam": "", "discord": ""}  # Dict[str: List[str]]
         self.platforms = []  # List[str] = [] # not using platforms anymore
         self.bio = ""

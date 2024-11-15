@@ -39,10 +39,10 @@ class ScoreManager:
         self.scores_db = dict()  # string (score type) -> [*->float] should be sorted
         for user in self.user_base.get_all_users():
             if hasattr(user, "scores"):  # in case user hasn't logged any scores yet
-                for entry in user.scores:
-                    if not entry in self.scores_db:
-                        self.scores_db[entry] = SortedList()
-                    self.scores_db[entry].add(user.scores[entry])
+                for cat in user.scores:
+                    if not cat in self.scores_db:
+                        self.scores_db[cat] = SortedList()
+                    self.scores_db[cat].add(entry(user, cat))
         print("scores db int: ", self.scores_db)
 
     # in case any changes were missed store all changes
@@ -96,18 +96,25 @@ class ScoreManager:
             print("scores calculated: ", scores)
             for entry in scores:
                 name, val = entry
+                if val is None:
+                    val = 0
+
                 # update scores_db, python is pass by reference so I'm unsure why this is necessary but it is
-                if name in user.scores:
-                    try:
-                        sorted_lis = self.scores_db[name]
-                        sorted_lis.remove(user.scores[name])
-                        sorted_lis.add(val)
-                    except ValueError:
-                        print("score wasn't in db, investigate bug")
+                # if name in user.scores:
+                #     try:
+                #         sorted_lis = self.scores_db[name]
+                #         sorted_lis.remove(user.scores[name])
+                #         sorted_lis.add(val)
+                #     except ValueError:
+                #         print("score wasn't in db, investigate bug")
                 # default user scores to 0 if they don't have one, this could end up
                 # inflating percentiles but that's ok
                 print("entry: ", entry)
-                user.scores[name] = 0 if val is None else val
+                if name not in user.scores:
+                    user.scores[name] = val
+                    self.scores_db[name].add(entry(user, name))
+                else:
+                    user.scores[name] = val
                 totalScore += val
 
         # overwrite missed scores to 0 as a safety check
@@ -117,7 +124,10 @@ class ScoreManager:
                     user.scores[cat] = 0
 
         # need to subdivide scores by game type at some point
+        added = "Total" in user.scores
         user.scores["Total"] = totalScore
+        if not added:
+            self.scores_db["Total"].add(entry(user, "Total"))
         user.last_score_version = VERSION
         print("finished calculating {user.username}'s scores: ", user.scores)
         self.user_base.update_user(user)
@@ -177,3 +187,52 @@ class ScoreManager:
             if percentile > val:
                 return self.grade_percents[val]
         return "F"
+
+
+# -------------------------------HELPERS---------------------------------------
+
+
+# just a container class for entries into the scores_db that is comparable
+class entry:
+    def __init__(self, user, key):
+        self.user = user
+        self.key = key
+
+    def value(self):
+        return self.user.scores[self.key]
+
+    def __lt__(self, other):
+        if isinstance(other, entry):
+            return self.value() < other.value()
+        return NotImplementedError
+
+    def __le__(self, other):
+        if isinstance(other, entry):
+            return self.value() <= other.value()
+        return NotImplementedError
+
+    def __eq__(self, other):
+        if isinstance(other, entry):
+            return self.value() == other.value()
+        return NotImplementedError
+
+    def __ne__(self, other):
+        if isinstance(other, entry):
+            return self.value() != other.value()
+        return NotImplementedError
+
+    def __gt__(self, other):
+        if isinstance(other, entry):
+            return self.value() > other.value()
+        return NotImplementedError
+
+    def __ge__(self, other):
+        if isinstance(other, entry):
+            return self.value() >= other.value()
+        return NotImplementedError
+
+    def __str__(self):
+        return "(" + str(self.value()) + ", " + self.user.username + ")"
+
+    def __repr__(self) -> str:
+        return self.__str__()

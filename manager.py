@@ -73,3 +73,10 @@ class Manager:
             ret[cat] = [user.scores[cat]] + stats[cat]
 
         return ret
+
+    # get all the scores for a given category
+    def get_leaderboard_data(self, cat):
+        if cat in self.score_manager.scores_db:
+            return self.score_manager.scores_db[cat]
+        else:
+            return ValueError

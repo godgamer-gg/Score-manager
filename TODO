@@ -1,13 +1,25 @@
-Fix json encoding (I think it works now)
-Calculate percentiles
-Need to drastically speed up score calculation
-Github Setup - add readme's, security, stuff for other people to work on it
-Change server and manager so all calls from runServer are manager functions
-Hashing passwords for security
-Riot Scores
-TETRIO
-Capcom Scores
-Setup Server scripts
-Discord Server for development - post early website launch and server setup
-Convert data storage to a more standard database format instead of using JSON and storing in memory
-Add good CLI tests
+#### All unordered
+
+## High:
+
+-   Need to drastically speed up score calculation
+-   Setup Server scripts
+-   Riot Scores
+-   Xbox achievement
+-   PSN achievement
+
+## Medium:
+
+-   Github Setup - add readme's, security, stuff for other people to work on it
+-   Hashing passwords for security
+-   TETRIO
+-   Capcom Scores
+-   Convert data storage to a more standard database format instead of using JSON and storing in memory
+-   Scores for any other game
+-   Accompanying discord bot
+
+## Low:
+
+-   Discord Server for development - post early website launch and server setup
+-   Add good CLI tests
+-   move existing tests into their own folder in a way that doesn't make python imports shit itself (fuck python imports)
