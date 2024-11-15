@@ -78,7 +78,7 @@ def set_load_score():
     password = "".join(random.choices(string.ascii_letters, k=7))
     test_user = User(username, password)
     UID = test_user.userID
-    scores = {"steam": 100, "riot": 100}
+    scores = {"CSGO": 0, "DOTA": 0, "RocketLeague": 0, "Achievement": 100, "Total": 100}
     test_user.scores = scores
     test_user.last_score_version = "test_version"
     user_base = UserBase()
@@ -137,6 +137,6 @@ if __name__ == "__main__":
     # add_and_get_user()
     # test_encoding()
     # add_a_user()
-    # set_load_score()
+    set_load_score()
     # clean()
     print_all()

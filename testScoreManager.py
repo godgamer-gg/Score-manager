@@ -95,3 +95,4 @@ if __name__ == "__main__":
     # testCSGOScore()
     # testTETRIOgetUserNameFromDiscord()
     # testCalculateTETRIOScore()
+    # sc.user_base.print_all()

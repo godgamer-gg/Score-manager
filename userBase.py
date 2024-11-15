@@ -85,7 +85,7 @@ class UserBase:
         if self.contains_username(act.username):
             print("contains username", act.username)
             raise ValueError("username already exists")
-        if act.email is not None and self.contains_email(act.email):
+        if hasattr(act, "email") and self.contains_email(act.email):
             raise ValueError("account with this email already exists")
         print("storing user: ", act.userID)
         self.users[act.userID] = act

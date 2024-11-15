@@ -130,18 +130,21 @@ class ScoreManager:
         for entry in user.scores:
             lis = self.scores_db[entry]
             score = user.scores[entry]
-            print(lis, score)
+            print("entry: ", entry)
+            print("list: ", lis)
+            print("score: ", score)
             if lis is None or len(lis) is None or score is None:
                 continue
             try:
                 # pos = self.scores_db[entry].index(user.scores[entry])
                 pos = lis.index(score)
                 if pos is 0:
-                    percentile = 1.0
+                    percentile = 0
                 else:
                     size = len(self.scores_db[entry])
                     print("size:", size, "pos:", pos)
-                    percentile = (size - pos - 1) / size
+                    percentile = 1 - ((size - pos - 1) / size)
+                    print("percentile: ", percentile)
                 summary[entry] = [percentile, self.grade(percentile)]
             except ValueError:
                 print("score wasn't saved in db")
@@ -168,8 +171,8 @@ class ScoreManager:
     }
 
     def grade(self, percentile: float) -> str:
-        if percentile is None:
-            return "F"
+        if percentile is None or percentile is 0:
+            return "N/A"
         for val in self.grade_percents:
             if percentile > val:
                 return self.grade_percents[val]

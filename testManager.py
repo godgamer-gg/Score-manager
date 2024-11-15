@@ -30,7 +30,7 @@ def calc_user_scores(m: Manager):
 
 
 def get_user_score_breakdown(m: Manager):
-    username = "testUser10"
+    username = "Alex"
     scores = m.get_user_score_breakdown(username)
     print(scores)
 
@@ -39,5 +39,5 @@ if __name__ == "__main__":
     # run tests
     manager = init_manager()
     # calc_score_sets_scores()
-    calc_user_scores(manager)
-    # get_user_score_breakdown(manager)
+    # calc_user_scores(manager)
+    get_user_score_breakdown(manager)
