@@ -35,9 +35,16 @@ def get_user_score_breakdown(m: Manager):
     print(scores)
 
 
+def get_leaderboard_data(m: Manager):
+    cat = "Total"
+    data = m.get_leaderboard_data(cat)
+    print(data)
+
+
 if __name__ == "__main__":
     # run tests
     manager = init_manager()
     # calc_score_sets_scores()
     # calc_user_scores(manager)
-    get_user_score_breakdown(manager)
+    # get_user_score_breakdown(manager)
+    get_leaderboard_data(manager)

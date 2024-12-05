@@ -230,9 +230,12 @@ def read_item(item_id: int, q: Union[str, None] = None):
     return {"item_id": item_id, "q": q}
 
 
-@app.post("/leaderboard-data")
+@app.get("/leaderboard-data/{category}")
 def leaderboard_data(category: str):
-    return {"TBD"}
+    # category = "Total"
+    cats = manager.get_leaderboard_categories()
+    lis = manager.get_leaderboard_data(category)
+    return {"categories": cats, "data": lis}
 
 
 # -----------------------------------ACCOUNTS--------------------------------------

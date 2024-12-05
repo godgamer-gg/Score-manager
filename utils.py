@@ -18,6 +18,8 @@ STEAM_SCORES = ["achievement", "DOTA", "RocketLeague", "CSGO"]
 
 POSSIBLE_SCORES = {"Steam": STEAM_SCORES, "Total": ["Total"]}
 
+# just a list version of possible scores
+CATEGORIES = ["Total"] + STEAM_SCORES
 
 # --------------------------CLASSES--------------------------------------
 

@@ -1,6 +1,6 @@
 import jsonpickle
 from scoring.scoreManager import ScoreManager
-from utils import User
+from utils import User, CATEGORIES
 from pprint import pprint
 
 from userBase import UserBase
@@ -74,9 +74,16 @@ class Manager:
 
         return ret
 
-    # get all the scores for a given category
+    # gets a list of all available categories
+    def get_leaderboard_categories(self):
+        return CATEGORIES
+
+    # get all the scores for a given category, converts from entry
     def get_leaderboard_data(self, cat):
         if cat in self.score_manager.scores_db:
-            return self.score_manager.scores_db[cat]
+            ret = []
+            for entry in self.score_manager.scores_db[cat]:
+                ret.insert(0, entry.format())
+            return ret
         else:
             return ValueError

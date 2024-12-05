@@ -236,3 +236,6 @@ class entry:
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    def format(self) -> str:
+        return [str(self.value()), self.user.username]
