@@ -3,7 +3,7 @@
 ## High:
 
 -   Need to drastically speed up score calculation
--   Setup Server scripts
+
 -   Riot Scores
 -   Xbox achievement
 -   PSN achievement
@@ -22,4 +22,4 @@
 
 -   Discord Server for development - post early website launch and server setup
 -   Add good CLI tests
--   move existing tests into their own folder in a way that doesn't make python imports shit itself (fuck python imports)
+-   move existing tests into their own folder in a way that doesn't make python imports shit itself (fuck python imports )

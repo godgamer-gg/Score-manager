@@ -1,5 +1,7 @@
 import json
 import jsonpickle
+import string
+import datrie
 
 from pprint import pprint
 from utils import User
@@ -13,6 +15,7 @@ class UserBase:
     def __init__(self):
         self.users = dict()  # id -> user
         self.json_file = JSON_FILE
+        self.username_lookup = datrie.Trie(string.ascii_lowercase)
         self.load_users()
 
     def load_users(self):
@@ -25,12 +28,18 @@ class UserBase:
             # File was empty
             print("JSON DECODER ERROR IN USER BASE")
             pass
+        for user in self.users.values():
+            self.username_lookup[user.username.lower()] = user.userID
+        print("built username lookup")
 
     # returns the user based on their userID
     def get_user(self, userID: str) -> User:
         if userID in self.users:
             return self.users[userID]
         return None
+
+    def username_prefix_lookup(self, prefix: str):
+        return self.username_lookup.keys(prefix.lower())
 
     def contains_email(self, email: str) -> bool:
         return self.get_user_by_email(email) is not None

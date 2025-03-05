@@ -131,24 +131,7 @@ async def verify_token(authorization: str = Header(...)):
 async def verify_and_return_current_user(payload: dict = Depends(verify_token)):
     username = payload["username"]
     print("detailed session request received for: ", username)
-    user = manager.user_base.get_user_by_username(username)
-    if hasattr(user, "accounts"):
-        print("accounts: ", user.accounts)
-        discord = user.accounts["discord"] if "discord" in user.accounts else ""
-        steam = user.accounts["steam"] if "steam" in user.accounts else ""
-    else:
-        # bug where sometimes accounts dict is not created
-        user.accounts = {"discord": "", "steam:": ""}
-        discord = ""
-        steam = ""
-
-    return {
-        "username": username,
-        "email": user.email,
-        "discord": discord,
-        "steam": steam,
-        "bio": user.bio,
-    }
+    return get_full_profile(username)
 
 
 # --------------------BASICS---------------------------------
@@ -296,3 +279,37 @@ async def update_user_profile(
     user.accounts["discord"] = act_info.discord
     user.bio = act_info.bio
     manager.user_base.update_user(user)
+
+
+@app.post("/profiles/search")
+async def search_users_by_term(search_term: str):
+    print("searching for users with term: {term}")
+    return manager.user_base.username_lookup(search_term)
+
+
+@app.get("/profile/detailed/{username}")
+async def get_full_profile(username: str):
+    user = manager.user_base.get_user_by_username(username)
+    if hasattr(user, "accounts"):
+        # print("accounts: ", user.accounts)
+        discord = user.accounts["discord"] if "discord" in user.accounts else ""
+        steam = user.accounts["steam"] if "steam" in user.accounts else ""
+    else:
+        # bug where sometimes accounts dict is not created
+        user.accounts = {"discord": "", "steam:": ""}
+        discord = ""
+        steam = ""
+    scores = manager.get_user_score_breakdown(user=user).copy()
+    if "Total" in scores:
+        total = scores["Total"][0]
+    else:
+        total = 0
+    return {
+        "username": username,
+        "email": user.email if hasattr(user, "email") else "",
+        "discord": discord,
+        "steam": steam,
+        "bio": user.bio if hasattr(user, "bio") else "",
+        "total": total,
+        "scores": scores,
+    }
