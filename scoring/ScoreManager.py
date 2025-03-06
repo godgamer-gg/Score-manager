@@ -136,6 +136,9 @@ class ScoreManager:
     # categories. Not a true percentile, returns % of users greater than
     # returns dict[Tuple(float, str)]
     def get_user_score_stats(self, user: User):
+        if not hasattr(user, "scores"):
+            user.scores = {}
+            return {}
         summary = {}
         for entry in user.scores:
             lis = self.scores_db[entry]

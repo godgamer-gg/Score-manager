@@ -27,59 +27,52 @@ CATEGORIES = ["Total"] + STEAM_SCORES
 # perhaps converting this to a struct would be more efficient
 # just using this to make packaging information easier
 class User(object):
-
-    # account info
-    username: str
-    hashed_password: str
-    email: str
-    token: str
-    priviliged: bool
-    guest: bool
-    # cosmetic
-    # flairs: list[str] Later on
-
-    userID: str
-    # lastScoreBreakdown
-    last_score_version: str
-    # platform name: info needed to access account
-
     def __init__(self, username=None, password=""):
-        if username == None:
-            self.username = "".join(random.choices(string.ascii_letters, k=14))
-        else:
-            self.username = username
+        # Generate random username if none provided
+        self.username = (
+            username
+            if username
+            else "".join(random.choices(string.ascii_letters, k=14))
+        )
         self.password = password
-        if username == "Guest" and password == "Guest":
-            self.guest = True
         self.userID = str(uuid4())
-        self.scores = {}  # Dict[str: : float]
-        self.accounts = {"steam": "", "discord": ""}  # Dict[str: List[str]]
-        self.platforms = []  # List[str] = [] # not using platforms anymore
+
+        # Account information
+        self.hashed_password = ""
+        self.email = ""
+        self.token = ""
+        self.privileged = False
+        self.guest = True if (username == "Guest" and password == "Guest") else False
+
+        # User profile data
         self.bio = ""
+        self.hidden = []  # List of attributes to hide from public view
+
+        # Platform accounts
+        self.accounts = {"steam": "", "discord": "", "email": ""}
+
+        # Score tracking
+        self.scores = {}  # Dict[str: float]
+        self.last_score_version = ""
 
     def preferred_name(self) -> str:
-        if hasattr(self, "nickname"):  # this feels jank there must be a better way
-            return self.nickname
-        else:
-            return self.username
+        """Returns the user's preferred display name"""
+        return getattr(self, "nickname", self.username)
 
-    # currently unused, probably deleting soon
-    def init_account(
-        self,
-        guest=False,
-        steamCode="",
-        discord="",
-        platforms=None,
-        nickname=None,
-    ):
-        self.accounts["steam"] = steamCode
-        self.accounts["discord"] = discord
-        if platforms:
-            self.platforms.extend(platforms)
-        if not nickname:
-            nickname = self.userID
-        if steamCode and "steam" not in self.platforms:
-            self.platforms.append("steam")
+    def hide_attribute(self, attribute_name):
+        """Add an attribute to the hidden list"""
+        if attribute_name not in self.hidden:
+            self.hidden.append(attribute_name)
+
+    def unhide_attribute(self, attribute_name):
+        """Remove an attribute from the hidden list"""
+        if attribute_name in self.hidden:
+            self.hidden.remove(attribute_name)
+
+    def update_account(self, platform, value):
+        """Update a platform account value"""
+        if platform in self.accounts:
+            self.accounts[platform] = value
 
 
 # base class for any handler

@@ -131,7 +131,7 @@ async def verify_token(authorization: str = Header(...)):
 async def verify_and_return_current_user(payload: dict = Depends(verify_token)):
     username = payload["username"]
     print("detailed session request received for: ", username)
-    return get_full_profile(username)
+    return await get_full_profile(username)
 
 
 # --------------------BASICS---------------------------------
@@ -218,7 +218,8 @@ def leaderboard_data(category: str):
     # category = "Total"
     cats = manager.get_leaderboard_categories()
     lis = manager.get_leaderboard_data(category)
-    return {"categories": cats, "data": lis}
+    # default return top 25
+    return {"categories": cats, "data": lis[0:25]}
 
 
 # -----------------------------------ACCOUNTS--------------------------------------
@@ -290,26 +291,51 @@ async def search_users_by_term(search_term: str):
 @app.get("/profile/detailed/{username}")
 async def get_full_profile(username: str):
     user = manager.user_base.get_user_by_username(username)
-    if hasattr(user, "accounts"):
-        # print("accounts: ", user.accounts)
-        discord = user.accounts["discord"] if "discord" in user.accounts else ""
-        steam = user.accounts["steam"] if "steam" in user.accounts else ""
-    else:
-        # bug where sometimes accounts dict is not created
-        user.accounts = {"discord": "", "steam:": ""}
-        discord = ""
-        steam = ""
-    scores = manager.get_user_score_breakdown(user=user).copy()
-    if "Total" in scores:
-        total = scores["Total"][0]
-    else:
-        total = 0
-    return {
+    response = {
         "username": username,
-        "email": user.email if hasattr(user, "email") else "",
-        "discord": discord,
-        "steam": steam,
-        "bio": user.bio if hasattr(user, "bio") else "",
-        "total": total,
-        "scores": scores,
+        "email": "",
+        "discord": "",
+        "steam": "",
+        "bio": "",
+        "total": 0,
+        "scores": {},
     }
+
+    # Set email if it exists
+    if hasattr(user, "email"):
+        response["email"] = (
+            "***" if "email" in getattr(user, "hidden", []) else user.email
+        )
+    else:
+        user.email = ""
+
+    # Handle accounts (discord, steam)
+    if hasattr(user, "accounts"):
+        accounts = user.accounts
+        response["discord"] = (
+            "***"
+            if "discord" in getattr(user, "hidden", [])
+            else accounts.get("discord", "")
+        )
+        response["steam"] = (
+            "***"
+            if "steam" in getattr(user, "hidden", [])
+            else accounts.get("steam", "")
+        )
+    else:
+        user.accounts = {}
+    # Set bio if it exists
+    if hasattr(user, "bio"):
+        response["bio"] = "***" if "bio" in getattr(user, "hidden", []) else user.bio
+    else:
+        user.bio = ""
+
+    # Get scores
+    scores = manager.get_user_score_breakdown(user=user).copy()
+    response["scores"] = scores
+
+    # Set total score if it exists
+    if "Total" in scores:
+        response["total"] = scores["Total"][0]
+
+    return response
