@@ -15,6 +15,9 @@ python-multipart>=0.0.6
 # Environment variables
 python-dotenv>=1.0.0
 
+# JSON handling
+jsonpickle>=3.0.1
+
 # Database (assuming you're using one)
 # Uncomment based on what you're using
 # sqlalchemy>=2.0.0
