@@ -58,7 +58,7 @@ class ScoreManager:
     def update_all_scores(self):
         for user in self.users:
             if user.last_score_version is not VERSION:
-                self.calculate_score_for_user(user, store=False)
+                self.calculate_scores_for_user(user, store=False)
             # self.user_base.update_user(user)
         self.sort_scoresDB()
         self.user_base.store_all()
@@ -112,7 +112,7 @@ class ScoreManager:
                 print("entry: ", entry)
                 if name not in user.scores:
                     user.scores[name] = val
-                    self.scores_db[name].add(entry(user, name))
+                    # self.scores_db[name].add(entry(user, name))
                 else:
                     user.scores[name] = val
                 totalScore += val
@@ -126,8 +126,8 @@ class ScoreManager:
         # need to subdivide scores by game type at some point
         added = "Total" in user.scores
         user.scores["Total"] = totalScore
-        if not added:
-            self.scores_db["Total"].add(entry(user, "Total"))
+        # if not added:
+        #     self.scores_db["Total"].add(entry(user, "Total"))
         user.last_score_version = VERSION
         print("finished calculating {user.username}'s scores: ", user.scores)
         self.user_base.update_user(user)

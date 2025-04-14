@@ -114,5 +114,5 @@ class SteamAchievementScoreCalculator(ScoreCalculator):
         # sum up the value for each achievement
         raw_score = 0
         for val in percents:
-            raw_score += (10000 / val**GROWTH_EXP) + BONUS_PTS
+            raw_score += (10000 / float(val) ** GROWTH_EXP) + BONUS_PTS
         return raw_score

@@ -1,0 +1,25 @@
+# Web framework
+fastapi>=0.95.0
+uvicorn>=0.21.0
+
+# HTTP handling
+starlette>=0.26.0
+pydantic>=1.10.7
+
+# Security
+passlib>=1.7.4
+bcrypt>=4.0.1
+python-jose>=3.3.0
+python-multipart>=0.0.6
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Database (assuming you're using one)
+# Uncomment based on what you're using
+# sqlalchemy>=2.0.0
+# pymongo>=4.3.3
+# motor>=3.1.1
+
+# Miscellaneous
+typing-extensions>=4.5.0

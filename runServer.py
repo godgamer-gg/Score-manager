@@ -126,12 +126,23 @@ async def verify_token(authorization: str = Header(...)):
 
 
 # advanced verifiation that also returns all of the users info
-# currently returns: username, email, steamID, discord, bio
+# currently returns: username, email, steamID, discord, bio, and score summary
 @app.post("/auth/current-user")
 async def verify_and_return_current_user(payload: dict = Depends(verify_token)):
     username = payload["username"]
     print("detailed session request received for: ", username)
-    return await get_full_profile(username)
+
+    # Get the user profile
+    profile = await get_full_profile(username)
+
+    if "scores" not in profile:
+        # Get score summary
+        score_summary = manager.get_user_score_breakdown(username=username)
+
+        # Add score summary to the profile response
+        profile["scores"] = score_summary
+
+    return profile
 
 
 # --------------------BASICS---------------------------------
