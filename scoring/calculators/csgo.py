@@ -1,12 +1,13 @@
 import requests
 from utils import User, ScoreCalculator
-from config import TRN_KEY
+import os
 
 
 #  not implemented yet
 class csgoCalculator(ScoreCalculator):
 
     name = "CSGO"
+    TRN_KEY = os.getenv("TRN_KEY")
 
     def get_CSGO_score(self, steamID) -> int:
         print("getting CSGO score")

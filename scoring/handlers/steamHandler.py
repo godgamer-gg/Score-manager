@@ -1,6 +1,5 @@
 import requests
-
-from ..config import STEAM_KEY
+import os
 from typing import List, Tuple
 from ..calculators.dota import DotaScoreCalculator
 from ..calculators.rocketLeague import rocketLeagueCalculator
@@ -17,7 +16,7 @@ COMP_GAMES = {
 
 class SteamHandler(Handler):
     def __init__(self):
-        self.KEY = STEAM_KEY
+        self.KEY = os.getenv("STEAM_KEY")
         self.compGames = {}
         # iterate through each of the necessary calculators and init one
         self.achievementCalc = SteamAchievementScoreCalculator()
