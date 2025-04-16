@@ -1,9 +1,18 @@
 import jsonpickle
-from scoring.scoreManager import ScoreManager
 from utils import User, CATEGORIES
 from pprint import pprint
 
 from userBase import UserBase
+
+try:
+    # Try relative import first
+    from scoring.scoreManager import ScoreManager
+except ModuleNotFoundError:
+    # Fall back to an absolute import
+    import sys, os
+
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from scoring.scoreManager import ScoreManager
 
 # settings to make sure jsonpickle will properly function
 jsonpickle.set_encoder_options("json", sort_keys=True)
