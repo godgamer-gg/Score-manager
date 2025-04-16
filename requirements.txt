@@ -18,6 +18,11 @@ python-dotenv>=1.0.0
 # JSON handling
 jsonpickle>=3.0.1
 
+# Data structures and utilities
+sortedcontainers>=2.4.0  # Used in scoreManager.py
+requests>=2.28.0  # Used in riotHandler.py for API calls
+bisect>=1.0.0  # Used in scoreManager.py
+
 # Database (assuming you're using one)
 # Uncomment based on what you're using
 # sqlalchemy>=2.0.0
@@ -26,3 +31,4 @@ jsonpickle>=3.0.1
 
 # Miscellaneous
 typing-extensions>=4.5.0
+datrie>=5.3.0
