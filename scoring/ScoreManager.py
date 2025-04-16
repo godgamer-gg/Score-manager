@@ -1,7 +1,6 @@
 import json
 import sys
 import jsonpickle
-import bisect
 from sortedcontainers import SortedList
 from .handlers.steamHandler import SteamHandler
 from .handlers.riotHandler import RiotHandler
