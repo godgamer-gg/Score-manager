@@ -3,7 +3,6 @@ from utils import User, CATEGORIES
 from pprint import pprint
 import os
 import sys
-import importlib.util
 
 # Add project root to path
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -11,12 +10,8 @@ sys.path.insert(0, project_root)
 
 from userBase import UserBase
 
-# Load the ScoreManager module dynamically
-score_manager_path = os.path.join(project_root, "scoring", "scoreManager.py")
-spec = importlib.util.spec_from_file_location("scoreManager", score_manager_path)
-score_manager_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(score_manager_module)
-ScoreManager = score_manager_module.ScoreManager
+# Direct import from scoring.py in the root directory
+from scoring import ScoreManager
 
 # settings to make sure jsonpickle will properly function
 jsonpickle.set_encoder_options("json", sort_keys=True)

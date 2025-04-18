@@ -1,10 +1,10 @@
 import requests
 import os
 from typing import List, Tuple
-from ..calculators.dota import DotaScoreCalculator
-from ..calculators.rocketLeague import rocketLeagueCalculator
-from ..calculators.csgo import csgoCalculator
-from ..calculators.steamAchievement import SteamAchievementScoreCalculator
+from calculators.dota import DotaScoreCalculator
+from calculators.rocketLeague import rocketLeagueCalculator
+from calculators.csgo import csgoCalculator
+from calculators.steamAchievement import SteamAchievementScoreCalculator
 from utils import init_calculator, Handler, ScoreCalculator
 
 COMP_GAMES = {

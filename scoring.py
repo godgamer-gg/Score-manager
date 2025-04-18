@@ -2,9 +2,9 @@ import json
 import sys
 import jsonpickle
 from sortedcontainers import SortedList
-from .handlers.steamHandler import SteamHandler
-from .handlers.riotHandler import RiotHandler
-from .handlers.xboxHandler import XboxHandler
+from handlers.steamHandler import SteamHandler
+from handlers.riotHandler import RiotHandler
+from handlers.xboxHandler import XboxHandler
 from utils import User, Handler, ScoreCalculator, POSSIBLE_SCORES
 
 # VSCODE BROKE SPACES AND TABS I KNOW IT'S TERRIBLE RIGHT NOW I WILL SLOWLY BE FIXING
