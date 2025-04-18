@@ -24,6 +24,15 @@ jsonpickle.register(User)
 # Force jsonpickle to fully encode custom objects and dictionaries
 jsonpickle.set_encoder_options("json", unpicklable=True)
 
+# Add at the top of your manager.py file to debug
+print("Current working directory:", os.getcwd())
+print("Files in current directory:", os.listdir("."))
+print("Files in project root:", os.listdir(project_root))
+if os.path.exists("scoring"):
+    print("Files in scoring directory:", os.listdir("scoring"))
+else:
+    print("scoring directory does not exist!")
+
 
 # Entry point for the backend server to call into the actual operations of the system
 class Manager:
